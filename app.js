@@ -135,9 +135,13 @@ class MercadoFacilApp {
       if (authModal) authModal.classList.remove('active');
       if (userChip) userChip.style.display = 'flex';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-      if (userNameEl) userNameEl.textContent = this.currentUser.name || this.currentUser.username;
+      
+      const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
+      const firstName = rawName.split(' ')[0];
+      if (userNameEl) userNameEl.textContent = `Olá, ${firstName}`;
+      
       if (userAvatarEl) {
-        const initials = (this.currentUser.name || this.currentUser.username).substring(0, 1).toUpperCase();
+        const initials = firstName.substring(0, 1).toUpperCase();
         userAvatarEl.textContent = initials;
       }
     } else {
