@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercado Fácil - Lista de Compras Inteligente & Preços On-line</title>
+  <meta name="description" content="Sistema inteligente de listas de compras de supermercado com valores atualizados on-line em tempo real, comparador entre redes e modo de compras.">
+  
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Header Principal (Glassmorphism Navbar) -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <div class="brand-info">
+          <h1>Mercado Fácil</h1>
+          <div class="brand-badge">
+            <span class="pulse-dot"></span> API Preços On-line Ativa
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Selector de Listas -->
+        <div class="list-selector-wrapper">
+          <select id="select-active-list" class="select-list" aria-label="Selecione a lista de compras"></select>
+          <button id="btn-new-list" class="btn btn-secondary" title="Nova Lista">
+            <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Nova Lista</span>
+          </button>
+        </div>
+
+        <button id="btn-sync-prices" class="btn btn-sync" title="Atualizar Cotações On-line">
+          <i class="fa-solid fa-arrows-rotate"></i> <span>Sincronizar Cotações</span>
+        </button>
+
+        <button id="btn-share-whatsapp" class="btn btn-secondary" title="Enviar no WhatsApp" style="color:#25d366; border-color:rgba(37, 211, 102, 0.3);">
+          <i class="fa-brands fa-whatsapp"></i> <span class="hide-mobile">WhatsApp</span>
+        </button>
+
+        <button id="btn-export-data" class="btn btn-icon" title="Backup JSON">
+          <i class="fa-solid fa-download"></i>
+        </button>
+
+        <button id="btn-delete-list" class="btn btn-icon" title="Excluir Lista Atual" style="color:var(--danger);">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+
+        <button id="theme-toggle-btn" class="btn btn-icon" title="Alternar Tema Claro/Escuro">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner Demonstrativo do Sistema -->
+    <div style="margin-bottom:1.5rem; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-color); max-height:170px; position:relative;">
+      <img src="assets/banner.jpg" alt="Mercado Fácil — Painel de Cotação de Preços" style="width:100%; height:170px; object-fit:cover; filter:brightness(0.8);">
+      <div style="position:absolute; bottom:1.25rem; left:1.5rem; color:white; text-shadow:0 2px 12px rgba(0,0,0,0.85); right:1.5rem;">
+        <span style="background:var(--primary); padding:0.25rem 0.75rem; border-radius:var(--radius-full); font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:0.35rem;">
+          <i class="fa-solid fa-bolt" style="margin-right:0.3rem;"></i> Monitoramento de Ofertas em Tempo Real
+        </span>
+        <h2 style="font-size:1.4rem; font-weight:800; line-height:1.2;">Mercado Fácil — Cotações Atualizadas On-line</h2>
+        <p style="font-size:0.85rem; opacity:0.95; font-weight:500; margin-top:0.2rem;">Compare preços entre supermercados da sua região e encontre a maior economia para a sua lista de compras.</p>
+      </div>
+    </div>
+
+    <!-- Cards Dashboard de Métricas e Orçamento -->
+    <section class="dashboard-metrics">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Total Estimado</span>
+          <div class="metric-icon" style="background:rgba(16, 185, 129, 0.15); color:var(--primary);">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+        </div>
+        <div id="metric-total-estimated" class="metric-value">R$ 0,00</div>
+        <div class="metric-sub">Baseado na cotação on-line de mercados</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">No Carrinho</span>
+          <div class="metric-icon" style="background:rgba(99, 102, 241, 0.15); color:var(--secondary);">
+            <i class="fa-solid fa-basket-shopping"></i>
+          </div>
+        </div>
+        <div id="metric-total-checked" class="metric-value">R$ 0,00</div>
+        <div class="metric-sub">Itens já pegos na prateleira</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Limite Orçamento</span>
+          <div class="metric-icon" style="background:rgba(245, 158, 11, 0.15); color:var(--accent);">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+        </div>
+        <div id="metric-budget-limit" class="metric-value">R$ 350,00</div>
+        <div class="progress-bar-bg">
+          <div id="budget-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+        <div id="metric-budget-percent" class="metric-sub" style="margin-top:0.35rem;">0% utilizado</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-title">Melhor Mercado</span>
+          <div class="metric-icon" style="background:rgba(234, 88, 12, 0.15); color:#ea580c;">
+            <i class="fa-solid fa-store"></i>
+          </div>
+        </div>
+        <div id="metric-best-store" class="metric-value" style="font-size:1.25rem;">Calculando...</div>
+        <div id="metric-best-sub" class="metric-sub" style="color:var(--primary); font-weight:600;">Economize na compra total</div>
+      </div>
+    </section>
+
+    <!-- Painel de Adição Rápida com Autocomplete -->
+    <section class="add-product-panel">
+      <form id="form-add-product" class="search-input-group">
+        <div class="input-col-full" style="position:relative;">
+          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">NOME DO PRODUTO (BUSCA ON-LINE)</label>
+          <input type="text" id="input-product-name" class="input-control" placeholder="Digite ex: Arroz, Leite, Picanha..." autocomplete="off" required>
+          <div id="autocomplete-box" class="autocomplete-box"></div>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">CATEGORIA</label>
+          <select id="select-product-category" class="input-control"></select>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">UNIDADE</label>
+          <select id="select-product-unit" class="input-control">
+            <option value="un">un (Unidade)</option>
+            <option value="kg">kg (Quilo)</option>
+            <option value="g">g (Gramas)</option>
+            <option value="L">L (Litros)</option>
+            <option value="pct">pct (Pacote)</option>
+            <option value="cx">cx (Caixa)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">PREÇO UN. (R$)</label>
+          <input type="number" step="0.01" id="input-product-price" class="input-control" placeholder="0,00">
+        </div>
+
+        <div style="align-self:end;">
+          <input type="hidden" id="input-product-qty" value="1">
+          <button type="submit" class="btn btn-primary" style="height:39px; width:100%;">
+            <i class="fa-solid fa-plus"></i> Adicionar
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Navegação por Abas -->
+    <nav class="tab-navigation">
+      <button class="tab-btn active" data-tab="tab-items">
+        <i class="fa-solid fa-list-check"></i> Minha Lista
+      </button>
+      <button class="tab-btn" data-tab="tab-shopping">
+        <i class="fa-solid fa-cart-shopping"></i> Modo Mercado
+      </button>
+      <button class="tab-btn" data-tab="tab-comparison">
+        <i class="fa-solid fa-shop"></i> Comparador de Redes
+      </button>
+      <button class="tab-btn" data-tab="tab-reports">
+        <i class="fa-solid fa-chart-pie"></i> Gráficos & Relatórios
+      </button>
+    </nav>
+
+    <!-- Conteúdo das Abas -->
+
+    <!-- Aba 1: Minha Lista Categorizada -->
+    <section id="tab-items" class="tab-panel active">
+      <div id="category-items-container"></div>
+    </section>
+
+    <!-- Aba 2: Modo Mercado (Carrinho no Celular) -->
+    <section id="tab-shopping" class="tab-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+        <h3>Modo Compras no Mercado</h3>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary filter-chip active" data-filter="all">Todos os Itens</button>
+          <button class="btn btn-secondary filter-chip" data-filter="pending">Apenas Pendentes</button>
+          <button class="btn btn-secondary filter-chip" data-filter="checked">Já no Carrinho</button>
+        </div>
+      </div>
+      <div id="shopping-cards-grid" class="shopping-grid"></div>
+    </section>
+
+    <!-- Aba 3: Comparador de Supermercados -->
+    <section id="tab-comparison" class="tab-panel">
+      <div id="store-comparison-container"></div>
+    </section>
+
+    <!-- Aba 4: Gráficos e Analytics -->
+    <section id="tab-reports" class="tab-panel">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title"><i class="fa-solid fa-chart-pie" style="color:var(--primary);"></i> Gastos por Categoria</h3>
+          <canvas id="chart-category" width="400" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title"><i class="fa-solid fa-chart-column" style="color:var(--secondary);"></i> Comparação por Redes de Supermercado</h3>
+          <canvas id="chart-stores" width="400" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modal: Nova Lista -->
+  <div id="modal-new-list" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Criar Nova Lista de Compras</h3>
+        <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-new-list">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.35rem;">NOME DA LISTA</label>
+          <input type="text" id="new-list-name" class="input-control" placeholder="Ex: Compras Mensais, Churrasco, etc." required>
+        </div>
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:0.35rem;">LIMITE DE ORÇAMENTO (R$)</label>
+          <input type="number" step="10" id="new-list-budget" class="input-control" value="300" required>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Lista</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Scripts -->
+  <script src="mock-prices.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

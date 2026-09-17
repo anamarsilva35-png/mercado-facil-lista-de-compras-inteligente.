@@ -1,0 +1,12 @@
+# Arquivos de sistema e ambiente
+.DS_Store
+Thumbs.db
+*.log
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+
+# Antigravity Scratch & Temporary files
+scratch/
