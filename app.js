@@ -48,6 +48,8 @@ class MercadoFacilApp {
     this.currentTab = 'tab-items';
     this.theme = 'light';
     this.shoppingFilter = 'all';
+    this.users = [];
+    this.currentUser = null;
 
     this.init();
   }
@@ -55,6 +57,7 @@ class MercadoFacilApp {
   init() {
     this.loadState();
     this.setupTheme();
+    this.setupAuth();
     this.bindEvents();
     this.render();
   }
@@ -64,6 +67,29 @@ class MercadoFacilApp {
     const savedTheme = localStorage.getItem('ms_theme') || 'dark'; // Padrão Dark elegante
     this.theme = savedTheme;
     document.documentElement.setAttribute('data-theme', this.theme);
+
+    // Carregar Contas de Usuários
+    const savedUsers = localStorage.getItem('mf_users');
+    if (savedUsers) {
+      try {
+        this.users = JSON.parse(savedUsers);
+      } catch (e) {
+        this.users = [{ username: 'usuario', name: 'Ana Maria', password: '123456' }];
+      }
+    } else {
+      this.users = [{ username: 'usuario', name: 'Ana Maria', password: '123456' }];
+      localStorage.setItem('mf_users', JSON.stringify(this.users));
+    }
+
+    // Carregar Sessão do Usuário Atual
+    const savedCurrentUser = localStorage.getItem('mf_current_user');
+    if (savedCurrentUser) {
+      try {
+        this.currentUser = JSON.parse(savedCurrentUser);
+      } catch (e) {
+        this.currentUser = null;
+      }
+    }
 
     const savedLists = localStorage.getItem('ms_lists');
     if (savedLists) {
@@ -89,6 +115,78 @@ class MercadoFacilApp {
     localStorage.setItem('ms_lists', JSON.stringify(this.lists));
     localStorage.setItem('ms_active_list', this.activeListId);
     localStorage.setItem('ms_theme', this.theme);
+    localStorage.setItem('mf_users', JSON.stringify(this.users));
+    if (this.currentUser) {
+      localStorage.setItem('mf_current_user', JSON.stringify(this.currentUser));
+    } else {
+      localStorage.removeItem('mf_current_user');
+    }
+  }
+
+  // Gerenciamento de Autenticação (Login / Cadastro / Logout)
+  setupAuth() {
+    const authModal = document.getElementById('auth-modal');
+    const userChip = document.getElementById('user-profile-chip');
+    const logoutBtn = document.getElementById('btn-logout');
+    const userNameEl = document.getElementById('user-display-name');
+    const userAvatarEl = document.getElementById('user-avatar-initials');
+
+    if (this.currentUser) {
+      if (authModal) authModal.classList.remove('active');
+      if (userChip) userChip.style.display = 'flex';
+      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      if (userNameEl) userNameEl.textContent = this.currentUser.name || this.currentUser.username;
+      if (userAvatarEl) {
+        const initials = (this.currentUser.name || this.currentUser.username).substring(0, 1).toUpperCase();
+        userAvatarEl.textContent = initials;
+      }
+    } else {
+      if (authModal) authModal.classList.add('active');
+      if (userChip) userChip.style.display = 'none';
+      if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+  }
+
+  login(username, password) {
+    const foundUser = this.users.find(u => 
+      u.username.toLowerCase() === username.toLowerCase().trim() && u.password === password
+    );
+
+    if (foundUser) {
+      this.currentUser = { username: foundUser.username, name: foundUser.name };
+      this.saveState();
+      this.setupAuth();
+      this.showToast(`✨ Bem-vindo(a) de volta, ${foundUser.name}!`);
+      this.render();
+      return true;
+    } else {
+      alert('Usuário ou senha incorretos. Verifique suas credenciais ou use a Conta Demo.');
+      return false;
+    }
+  }
+
+  register(name, username, password) {
+    const exists = this.users.some(u => u.username.toLowerCase() === username.toLowerCase().trim());
+    if (exists) {
+      alert('Este nome de usuário já está cadastrado. Escolha outro usuário.');
+      return false;
+    }
+
+    const newUser = { name: name.trim(), username: username.trim(), password };
+    this.users.push(newUser);
+    this.currentUser = { username: newUser.username, name: newUser.name };
+    this.saveState();
+    this.setupAuth();
+    this.showToast(`🎉 Conta criada com sucesso! Bem-vindo(a), ${newUser.name}!`);
+    this.render();
+    return true;
+  }
+
+  logout() {
+    this.currentUser = null;
+    this.saveState();
+    this.setupAuth();
+    this.showToast('Sua sessão foi encerrada com sucesso.');
   }
 
   setupTheme() {
@@ -117,6 +215,63 @@ class MercadoFacilApp {
   bindEvents() {
     // Alternador de tema
     document.getElementById('theme-toggle-btn')?.addEventListener('click', () => this.toggleTheme());
+
+    // Eventos de Autenticação (Login / Cadastro)
+    document.getElementById('tab-auth-login')?.addEventListener('click', () => {
+      document.getElementById('tab-auth-login').classList.add('active');
+      document.getElementById('tab-auth-register').classList.remove('active');
+      document.getElementById('form-auth-login').style.display = 'block';
+      document.getElementById('form-auth-register').style.display = 'none';
+    });
+
+    document.getElementById('tab-auth-register')?.addEventListener('click', () => {
+      document.getElementById('tab-auth-register').classList.add('active');
+      document.getElementById('tab-auth-login').classList.remove('active');
+      document.getElementById('form-auth-register').style.display = 'block';
+      document.getElementById('form-auth-login').style.display = 'none';
+    });
+
+    // Submissão do Login
+    document.getElementById('form-auth-login')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const userVal = document.getElementById('auth-login-username').value;
+      const passVal = document.getElementById('auth-login-password').value;
+      this.login(userVal, passVal);
+    });
+
+    // Submissão do Cadastro
+    document.getElementById('form-auth-register')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameVal = document.getElementById('auth-reg-name').value;
+      const userVal = document.getElementById('auth-reg-username').value;
+      const passVal = document.getElementById('auth-reg-password').value;
+      this.register(nameVal, userVal, passVal);
+    });
+
+    // Botão Preencher Dados Demo
+    document.getElementById('btn-fill-demo-user')?.addEventListener('click', () => {
+      document.getElementById('tab-auth-login').click();
+      document.getElementById('auth-login-username').value = 'usuario';
+      document.getElementById('auth-login-password').value = '123456';
+    });
+
+    // Alternar visibilidade da senha
+    document.getElementById('btn-toggle-password-login')?.addEventListener('click', () => {
+      const input = document.getElementById('auth-login-password');
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('btn-toggle-password-reg')?.addEventListener('click', () => {
+      const input = document.getElementById('auth-reg-password');
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    // Botão Sair / Logout
+    document.getElementById('btn-logout')?.addEventListener('click', () => {
+      if (confirm('Deseja realmente sair da sua conta?')) {
+        this.logout();
+      }
+    });
 
     // Seleção de lista ativa
     document.getElementById('select-active-list')?.addEventListener('change', (e) => {

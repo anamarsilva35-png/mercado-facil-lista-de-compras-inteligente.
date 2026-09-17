@@ -14,6 +14,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- PWA & Mobile Icons -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -36,6 +42,16 @@
       </div>
 
       <div class="header-actions">
+        <!-- Perfil do Usuário Logado -->
+        <div id="user-profile-chip" class="user-profile-chip" style="display:none;">
+          <div class="user-avatar-circle" id="user-avatar-initials">U</div>
+          <span id="user-display-name">Usuário</span>
+        </div>
+
+        <button id="btn-logout" class="btn btn-icon" title="Sair da Conta" style="display:none; color:var(--danger);">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+
         <!-- Selector de Listas -->
         <div class="list-selector-wrapper">
           <select id="select-active-list" class="select-list" aria-label="Selecione a lista de compras"></select>
@@ -249,8 +265,89 @@
     </div>
   </div>
 
+  <!-- Modal: Autenticação (Login / Cadastro) -->
+  <div id="auth-modal" class="auth-overlay active">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo"><i class="fa-solid fa-cart-shopping"></i></div>
+        <h2 class="auth-title">Mercado Fácil</h2>
+        <p class="auth-subtitle">Entre com seu usuário e senha para acessar suas listas</p>
+      </div>
+
+      <div class="auth-toggle-tabs">
+        <button id="tab-auth-login" class="auth-tab-btn active">Entrar</button>
+        <button id="tab-auth-register" class="auth-tab-btn">Criar Conta</button>
+      </div>
+
+      <!-- Formulário de Login -->
+      <form id="form-auth-login">
+        <div class="auth-form-group">
+          <label for="auth-login-username">Usuário ou E-mail</label>
+          <input type="text" id="auth-login-username" class="input-control" placeholder="Digite seu usuário" required autocomplete="username">
+        </div>
+
+        <div class="auth-form-group">
+          <label for="auth-login-password">Senha</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="auth-login-password" class="input-control" placeholder="••••••••" required autocomplete="current-password">
+            <button type="button" class="password-toggle-btn" id="btn-toggle-password-login" title="Mostrar/Ocultar Senha"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; height:44px; margin-top:0.5rem; font-size:1rem;">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar no Aplicativo
+        </button>
+      </form>
+
+      <!-- Formulário de Cadastro -->
+      <form id="form-auth-register" style="display:none;">
+        <div class="auth-form-group">
+          <label for="auth-reg-name">Nome Completo</label>
+          <input type="text" id="auth-reg-name" class="input-control" placeholder="Ex: Ana Maria Silva" required autocomplete="name">
+        </div>
+
+        <div class="auth-form-group">
+          <label for="auth-reg-username">Nome de Usuário</label>
+          <input type="text" id="auth-reg-username" class="input-control" placeholder="Ex: anamaria" required autocomplete="username">
+        </div>
+
+        <div class="auth-form-group">
+          <label for="auth-reg-password">Senha</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="auth-reg-password" class="input-control" placeholder="Crie uma senha de acesso" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" id="btn-toggle-password-reg" title="Mostrar/Ocultar Senha"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; height:44px; margin-top:0.5rem; font-size:1rem;">
+          <i class="fa-solid fa-user-plus"></i> Cadastrar e Acessar
+        </button>
+      </form>
+
+      <div class="demo-account-hint">
+        💡 <strong>Acesso Rápido de Teste:</strong><br>
+        Usuário: <code>usuario</code> | Senha: <code>123456</code><br>
+        <button type="button" id="btn-fill-demo-user" class="btn btn-secondary" style="margin-top:0.5rem; padding:0.3rem 0.75rem; font-size:0.78rem;">
+          <i class="fa-solid fa-key"></i> Preencher Dados Demo
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript Scripts -->
   <script src="mock-prices.js"></script>
   <script src="app.js"></script>
+  <script>
+    // Registro do Service Worker para PWA (Celulares e Navegador)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(() => {
+          console.log('Mercado Fácil: Service Worker PWA registrado com sucesso!');
+        }).catch(err => {
+          console.log('Service Worker erro:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

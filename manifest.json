@@ -1,0 +1,17 @@
+{
+  "name": "Mercado Fácil - Listas & Preços On-line",
+  "short_name": "Mercado Fácil",
+  "description": "Sistema de listas de compras com cotação de preços on-line e comparador de supermercados",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/banner.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
