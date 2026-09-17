@@ -403,7 +403,7 @@ class MercadoFacilApp {
     if (tabId === 'tab-reports') this.renderCharts();
   }
 
-  // Lógica Autocomplete
+  // Lógica Autocomplete com Sugestão de Menor Preço On-line por Supermercado
   handleAutocomplete(query) {
     const box = document.getElementById('autocomplete-box');
     if (!box) return;
@@ -423,27 +423,47 @@ class MercadoFacilApp {
       return;
     }
 
-    box.innerHTML = matches.map(p => `
-      <div class="autocomplete-item" data-id="${p.id}">
-        <div>
-          <div class="autocomplete-name">${p.name}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted);">${CATEGORIES[p.category].name} • ${p.unit}</div>
+    box.innerHTML = matches.map(p => {
+      // Encontrar a menor oferta entre os 5 supermercados
+      const storeOffers = SUPERMARKETS.map(s => ({
+        storeName: s.shortName || s.name,
+        storeKey: s.id,
+        price: +(p.basePrice * s.factor).toFixed(2)
+      })).sort((a, b) => a.price - b.price);
+      const best = storeOffers[0];
+
+      return `
+        <div class="autocomplete-item" data-id="${p.id}" data-best-price="${best.price}" data-best-store="${best.storeKey}">
+          <div>
+            <div class="autocomplete-name">${p.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${CATEGORIES[p.category]?.name || 'Mercearia'} • ${p.unit}</div>
+            <div style="font-size:0.75rem; color:var(--primary); font-weight:700; margin-top:0.15rem;">
+              <i class="fa-solid fa-fire" style="color:var(--accent);"></i> Menor preço: <strong>${formatBRL(best.price)}</strong> (no ${best.storeName})
+            </div>
+          </div>
+          <div class="autocomplete-meta" style="text-align:right;">
+            <div style="font-size:0.8rem; text-decoration:line-through; opacity:0.6; font-weight:normal;">${formatBRL(p.basePrice)}</div>
+            <div>${formatBRL(best.price)}</div>
+          </div>
         </div>
-        <div class="autocomplete-meta">${formatBRL(p.basePrice)}</div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     box.classList.add('visible');
 
     box.querySelectorAll('.autocomplete-item').forEach(item => {
       item.addEventListener('click', () => {
         const pId = item.getAttribute('data-id');
+        const bestPrice = parseFloat(item.getAttribute('data-best-price'));
+        const bestStore = item.getAttribute('data-best-store');
         const prod = PRODUCT_CATALOG.find(p => p.id === pId);
+        
         if (prod) {
           document.getElementById('input-product-name').value = prod.name;
-          document.getElementById('input-product-price').value = prod.basePrice.toFixed(2);
+          document.getElementById('input-product-price').value = bestPrice ? bestPrice.toFixed(2) : prod.basePrice.toFixed(2);
           document.getElementById('select-product-category').value = prod.category;
           document.getElementById('select-product-unit').value = prod.unit;
+          this.showToast(`💡 Sugerido o menor preço: ${formatBRL(bestPrice)} (${CATEGORIES[bestStore]?.name || 'Oferta'})`);
         }
         box.classList.remove('visible');
       });
@@ -1013,12 +1033,20 @@ class MercadoFacilApp {
       `).join('');
     }
 
-    // 2. Preencher Select de Categorias no formulário
+    // 2. Preencher Select de Categorias no formulário (Com Grupos de Supermercados)
     const catSelect = document.getElementById('select-product-category');
-    if (catSelect && catSelect.options.length <= 1) {
-      catSelect.innerHTML = Object.keys(CATEGORIES).map(k => `
-        <option value="${k}">${CATEGORIES[k].name}</option>
-      `).join('');
+    if (catSelect && (catSelect.options.length <= 1 || catSelect.querySelectorAll('optgroup').length === 0)) {
+      const prodCatKeys = ['hortifruti', 'carnes', 'laticinios', 'mercearia', 'padaria', 'limpeza', 'bebidas', 'higiene'];
+      const storeCatKeys = ['supermercados_bh', 'supermercados_abc', 'supermercados_rena', 'oliveira_super', 'rede_uniao'];
+
+      catSelect.innerHTML = `
+        <optgroup label="🏷️ Categorias de Produtos">
+          ${prodCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
+        </optgroup>
+        <optgroup label="🏪 Categorias por Supermercado">
+          ${storeCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
+        </optgroup>
+      `;
     }
 
     // 3. Renderizar seções

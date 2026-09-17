@@ -19,7 +19,13 @@ const CATEGORIES = {
   padaria: { name: 'Padaria & Confeitaria', icon: 'fa-bread-slice', color: '#d97706', bg: 'rgba(217, 119, 6, 0.15)' },
   limpeza: { name: 'Produtos de Limpeza', icon: 'fa-spray-can-sparkles', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)' },
   bebidas: { name: 'Bebidas', icon: 'fa-wine-bottle', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-  higiene: { name: 'Higiene & Cuidados', icon: 'fa-pump-soap', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' }
+  higiene: { name: 'Higiene & Cuidados', icon: 'fa-pump-soap', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
+  // Categorias por Nome do Supermercado
+  supermercados_bh: { name: 'Supermercados BH', icon: 'fa-cart-shopping', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.15)' },
+  supermercados_abc: { name: 'Supermercados ABC', icon: 'fa-store', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.15)' },
+  supermercados_rena: { name: 'Supermercados Rena', icon: 'fa-bag-shopping', color: '#ea580c', bg: 'rgba(234, 88, 12, 0.15)' },
+  oliveira_super: { name: 'Oliveira Super', icon: 'fa-basket-shopping', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.15)' },
+  rede_uniao: { name: 'Rede União', icon: 'fa-tags', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)' }
 };
 
 const PRODUCT_CATALOG = [
