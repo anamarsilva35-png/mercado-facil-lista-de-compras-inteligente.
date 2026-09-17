@@ -43,6 +43,40 @@ mercado_smart/
 
 ---
 
+## ☁️ Como Fazer o Deploy na Vercel
+
+O projeto já está totalmente configurado com `vercel.json` e `.vercelignore` para rodar na Vercel com alta performance e cabeçalhos de segurança otimizados.
+
+### Opção 1: Pelo GitHub (Recomendado)
+
+1. Crie um repositório no seu [GitHub](https://github.com/new).
+2. No terminal do seu projeto, vincule o repositório remoto e envie o código:
+   ```bash
+   git add .
+   git commit -m "feat: configuracoes para deploy na vercel"
+   git branch -M main
+   git remote add origin https://github.com/SEU_USUARIO/NOME_DO_REPO.git
+   git push -u origin main
+   ```
+3. Acesse [vercel.com](https://vercel.com) e faça login (pode ser com sua conta do GitHub).
+4. Clique em **"Add New..."** > **"Project"**.
+5. Selecione o repositório do projeto recém-criado.
+6. A Vercel detectará automaticamente como projeto estático:
+   - **Framework Preset**: *Other*
+   - **Root Directory**: `./`
+7. Clique no botão azul **"Deploy"**.
+8. Em poucos segundos seu site estará no ar com HTTPS gratuito e URL oficial (ex: `mercado-facil.vercel.app`)!
+
+### Opção 2: Pela Linha de Comando (Vercel CLI)
+
+Se você tiver o Node.js instalado no seu computador:
+```bash
+npx vercel
+```
+Basta seguir as instruções na tela e fazer login para publicar imediatamente.
+
+---
+
 ## 📄 Licença
 
 Este projeto foi desenvolvido com a assistência do **Antigravity AI**.

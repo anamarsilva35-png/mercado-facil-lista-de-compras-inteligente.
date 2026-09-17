@@ -10,3 +10,6 @@ Thumbs.db
 
 # Antigravity Scratch & Temporary files
 scratch/
+
+# Vercel
+.vercel/
