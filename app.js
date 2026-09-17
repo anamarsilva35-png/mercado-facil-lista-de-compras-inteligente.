@@ -248,11 +248,13 @@ class MercadoFacilApp {
       this.register(nameVal, userVal, passVal);
     });
 
-    // Botão Preencher Dados Demo
-    document.getElementById('btn-fill-demo-user')?.addEventListener('click', () => {
-      document.getElementById('tab-auth-login').click();
-      document.getElementById('auth-login-username').value = 'usuario';
-      document.getElementById('auth-login-password').value = '123456';
+    // Botão Preencher com Conta Google
+    document.getElementById('btn-fill-google-user')?.addEventListener('click', () => {
+      this.currentUser = { username: 'google_user', name: 'Ana Maria Silva (Google)' };
+      this.saveState();
+      this.setupAuth();
+      this.showToast('🌐 Autenticado com sucesso via Conta Google!');
+      this.render();
     });
 
     // Alternar visibilidade da senha
