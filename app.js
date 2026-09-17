@@ -894,9 +894,10 @@ class MercadoFacilApp {
         ctxStores.textAlign = 'center';
         ctxStores.fillText(`R$${store.total.toFixed(0)}`, x + barWidth / 2, y - 5);
 
-        // Nome da Loja
-        ctxStores.font = '10px Inter';
-        ctxStores.fillText(store.name.split(' ')[0], x + barWidth / 2, 188);
+        // Nome Curto da Loja nos Gráficos (ABC, BH, Oliveira, União, Rena)
+        const shortLabel = store.shortName || store.name;
+        ctxStores.font = 'bold 11px Inter';
+        ctxStores.fillText(shortLabel, x + barWidth / 2, 188);
       });
     }
   }

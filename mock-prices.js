@@ -4,11 +4,11 @@
  */
 
 const SUPERMARKETS = [
-  { id: 'supermercados_bh', name: 'Supermercados BH', color: '#dc2626', badge: 'Meu BH • Líder em Ofertas', factor: 0.91, icon: 'fa-cart-shopping' },
-  { id: 'supermercados_abc', name: 'Supermercados ABC', color: '#2563eb', badge: 'Atacado & Varejo', factor: 0.93, icon: 'fa-store' },
-  { id: 'supermercados_rena', name: 'Supermercados Rena', color: '#ea580c', badge: 'Meu Rena • Tradição & Qualidade', factor: 0.96, icon: 'fa-bag-shopping' },
-  { id: 'oliveira_super', name: 'Oliveira Super', color: '#16a34a', badge: 'Oferta Diária Garantida', factor: 0.92, icon: 'fa-basket-shopping' },
-  { id: 'rede_uniao', name: 'Rede União', color: '#8b5cf6', badge: 'Clube de Vantagens', factor: 0.95, icon: 'fa-tags' }
+  { id: 'supermercados_bh', name: 'Supermercados BH', shortName: 'BH', color: '#dc2626', badge: 'Meu BH • Líder em Ofertas', factor: 0.91, icon: 'fa-cart-shopping' },
+  { id: 'supermercados_abc', name: 'Supermercados ABC', shortName: 'ABC', color: '#2563eb', badge: 'Atacado & Varejo', factor: 0.93, icon: 'fa-store' },
+  { id: 'supermercados_rena', name: 'Supermercados Rena', shortName: 'Rena', color: '#ea580c', badge: 'Meu Rena • Tradição & Qualidade', factor: 0.96, icon: 'fa-bag-shopping' },
+  { id: 'oliveira_super', name: 'Oliveira Super', shortName: 'Oliveira', color: '#16a34a', badge: 'Oferta Diária Garantida', factor: 0.92, icon: 'fa-basket-shopping' },
+  { id: 'rede_uniao', name: 'Rede União', shortName: 'União', color: '#8b5cf6', badge: 'Clube de Vantagens', factor: 0.95, icon: 'fa-tags' }
 ];
 
 const CATEGORIES = {
