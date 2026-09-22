@@ -69,4 +69,4 @@ Este projeto foi desenvolvido com a assistência do **Antigravity AI**.
 ## Link do projeto
 
 **URL pública:**  
-file:///C:/Users/Anamar/.gemini/antigravity/scratch/mercado_smart/index.html
+https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente..git
