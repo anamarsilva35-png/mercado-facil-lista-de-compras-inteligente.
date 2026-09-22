@@ -36,7 +36,7 @@ mercado_smart/
 
 1. Clone ou baixe este repositório:
    ```bash
-   git clone https://github.com/SEU_USUARIO/mercado-facil.git
+   git clone https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente.git
    ```
 2. Abra a pasta do projeto.
 3. Dê um duplo clique no arquivo `index.html` para abrir a aplicação diretamente em qualquer navegador web (Google Chrome, Microsoft Edge, Firefox, Safari).
