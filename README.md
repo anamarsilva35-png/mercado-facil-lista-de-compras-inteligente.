@@ -71,4 +71,4 @@ Este projeto foi desenvolvido com a assistência do **Antigravity AI**.
 ## Link do projeto
 
 **URL pública:**  
-https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente..git
+https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente.git

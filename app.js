@@ -41,6 +41,14 @@ function formatBRL(value) {
   return (value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function parseLocalizedNumber(value, fallback = 0) {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'number') return isNaN(value) ? fallback : value;
+  const normalized = String(value).trim().replace(',', '.');
+  const parsed = parseFloat(normalized);
+  return isNaN(parsed) ? fallback : parsed;
+}
+
 class MercadoFacilApp {
   constructor() {
     this.lists = [];
@@ -372,11 +380,48 @@ class MercadoFacilApp {
       });
     });
 
+    // Botão Copiar Lista
+    document.getElementById('btn-copy-list')?.addEventListener('click', () => this.copyListToClipboard());
+
     // Botão WhatsApp Share
     document.getElementById('btn-share-whatsapp')?.addEventListener('click', () => this.shareWhatsApp());
 
     // Botão Exportar / Backup
     document.getElementById('btn-export-data')?.addEventListener('click', () => this.exportJSON());
+
+    // Botão Importar Backup JSON
+    const importInput = document.getElementById('input-import-json');
+    document.getElementById('btn-import-data')?.addEventListener('click', () => {
+      importInput?.click();
+    });
+    importInput?.addEventListener('change', (e) => this.handleImportJSON(e));
+
+    // Botão Editar Orçamento
+    document.getElementById('btn-edit-budget')?.addEventListener('click', () => {
+      const list = this.getActiveList();
+      const budgetInput = document.getElementById('input-edit-budget');
+      if (budgetInput) budgetInput.value = list.budget ? list.budget.toFixed(2).replace('.', ',') : '350,00';
+      this.openModal('modal-edit-budget');
+    });
+
+    // Formulário Salvar Orçamento
+    document.getElementById('form-edit-budget')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const budgetInput = document.getElementById('input-edit-budget');
+      const newBudget = parseLocalizedNumber(budgetInput.value, 300);
+      const list = this.getActiveList();
+      list.budget = newBudget;
+      this.saveState();
+      this.closeModal('modal-edit-budget');
+      this.showToast(`Orçamento atualizado para ${formatBRL(newBudget)}!`);
+      this.render();
+    });
+
+    // Formulário Salvar Item Editado
+    document.getElementById('form-edit-item')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveEditedItem();
+    });
 
     // Modais Close buttons
     document.querySelectorAll('.modal-close, .btn-modal-cancel').forEach(btn => {
@@ -481,13 +526,16 @@ class MercadoFacilApp {
     if (!nameInput.value.trim()) return;
 
     const list = this.getActiveList();
+    const parsedQty = parseLocalizedNumber(qtyInput?.value, 1);
+    const parsedPrice = parseLocalizedNumber(priceInput?.value, 0.00);
+
     const newItem = {
       id: 'i_' + Date.now(),
       name: nameInput.value.trim(),
       category: categorySelect.value || 'mercearia',
       unit: unitSelect.value || 'un',
-      quantity: parseFloat(qtyInput.value) || 1,
-      price: parseFloat(priceInput.value) || 0.00,
+      quantity: parsedQty > 0 ? parsedQty : 1,
+      price: parsedPrice >= 0 ? parsedPrice : 0.00,
       checked: false,
       trend: 'neutral',
       lastUpdated: 'Agora'
@@ -498,7 +546,7 @@ class MercadoFacilApp {
     this.showToast(`"${newItem.name}" adicionado à lista.`);
     nameInput.value = '';
     priceInput.value = '';
-    qtyInput.value = '1';
+    if (qtyInput) qtyInput.value = '1';
 
     this.render();
   }
@@ -663,7 +711,10 @@ class MercadoFacilApp {
                     </td>
                     <td>${formatBRL(item.price)}</td>
                     <td style="font-weight:700; color:var(--primary);">${formatBRL(subtotal)}</td>
-                    <td style="text-align:right;">
+                    <td style="text-align:right; white-space:nowrap;">
+                      <button class="btn-icon btn-edit-item" data-id="${item.id}" style="width:32px; height:32px; font-size:0.85rem; margin-right:0.35rem;" title="Editar item">
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
                       <button class="btn-icon btn-delete-item" data-id="${item.id}" style="width:32px; height:32px; font-size:0.85rem;" title="Remover item">
                         <i class="fa-solid fa-trash-can"></i>
                       </button>
@@ -698,6 +749,13 @@ class MercadoFacilApp {
       b.addEventListener('click', (e) => {
         const id = e.currentTarget.getAttribute('data-id');
         this.updateItemQty(id, 1);
+      });
+    });
+
+    container.querySelectorAll('.btn-edit-item').forEach(b => {
+      b.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-id');
+        this.openEditItemModal(id);
       });
     });
 
@@ -1021,6 +1079,168 @@ class MercadoFacilApp {
     }, 3000);
   }
 
+  // Métodos de Edição de Item
+  openEditItemModal(itemId) {
+    const list = this.getActiveList();
+    const item = list.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    const idInput = document.getElementById('edit-item-id');
+    const nameInput = document.getElementById('edit-item-name');
+    const catSelect = document.getElementById('edit-item-category');
+    const unitSelect = document.getElementById('edit-item-unit');
+    const qtyInput = document.getElementById('edit-item-qty');
+    const priceInput = document.getElementById('edit-item-price');
+
+    if (idInput) idInput.value = item.id;
+    if (nameInput) nameInput.value = item.name;
+    if (catSelect) {
+      this.populateCategorySelect(catSelect);
+      catSelect.value = item.category || 'mercearia';
+    }
+    if (unitSelect) unitSelect.value = item.unit || 'un';
+    if (qtyInput) qtyInput.value = item.quantity;
+    if (priceInput) priceInput.value = item.price ? item.price.toFixed(2).replace('.', ',') : '0,00';
+
+    this.openModal('modal-edit-item');
+  }
+
+  saveEditedItem() {
+    const idInput = document.getElementById('edit-item-id');
+    const nameInput = document.getElementById('edit-item-name');
+    const catSelect = document.getElementById('edit-item-category');
+    const unitSelect = document.getElementById('edit-item-unit');
+    const qtyInput = document.getElementById('edit-item-qty');
+    const priceInput = document.getElementById('edit-item-price');
+
+    if (!nameInput.value.trim()) return;
+
+    const list = this.getActiveList();
+    const item = list.items.find(i => i.id === idInput.value);
+    if (!item) return;
+
+    const parsedQty = parseLocalizedNumber(qtyInput.value, 1);
+    const parsedPrice = parseLocalizedNumber(priceInput.value, 0.00);
+
+    item.name = nameInput.value.trim();
+    item.category = catSelect.value || 'mercearia';
+    item.unit = unitSelect.value || 'un';
+    item.quantity = parsedQty > 0 ? parsedQty : 1;
+    item.price = parsedPrice >= 0 ? parsedPrice : 0.00;
+
+    this.saveState();
+    this.closeModal('modal-edit-item');
+    this.showToast(`"${item.name}" atualizado com sucesso!`);
+    this.render();
+  }
+
+  // Copiar lista para área de transferência
+  copyListToClipboard() {
+    const list = this.getActiveList();
+    if (list.items.length === 0) {
+      alert('Sua lista está vazia.');
+      return;
+    }
+
+    let text = `🛒 Mercado Fácil - ${list.name}\n`;
+    text += `📅 Cotação: ${new Date().toLocaleDateString('pt-BR')}\n`;
+    text += `🎯 Limite de Orçamento: ${formatBRL(list.budget || 300)}\n\n`;
+
+    let total = 0;
+    list.items.forEach(item => {
+      const sub = item.price * item.quantity;
+      total += sub;
+      text += `${item.checked ? '✅' : '▫️'} ${item.name} (${item.quantity} ${item.unit}) - ${formatBRL(sub)}\n`;
+    });
+
+    text += `\n💰 Total Estimado: ${formatBRL(total)}\n`;
+    text += `✨ Mercado Fácil - Lista de Compras Inteligente`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showToast('📋 Lista copiada para a área de transferência!');
+      }).catch(() => {
+        this.fallbackCopyText(text);
+      });
+    } else {
+      this.fallbackCopyText(text);
+    }
+  }
+
+  fallbackCopyText(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      this.showToast('📋 Lista copiada para a área de transferência!');
+    } catch (err) {
+      alert('Não foi possível copiar automaticamente.');
+    }
+    document.body.removeChild(textarea);
+  }
+
+  // Importação JSON
+  handleImportJSON(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data) || data.length === 0 || !data[0].name) {
+          alert('Arquivo JSON inválido. O arquivo deve conter uma lista ou conjunto de listas exportadas pelo Mercado Fácil.');
+          return;
+        }
+
+        const shouldReplace = confirm(
+          `Arquivo carregado com ${data.length} lista(s)!\n\nClique em OK para SUBSTITUIR suas listas atuais ou Cancelar para MESCLAR com as existentes.`
+        );
+
+        if (shouldReplace) {
+          this.lists = data;
+        } else {
+          const existingIds = new Set(this.lists.map(l => l.id));
+          data.forEach(item => {
+            if (existingIds.has(item.id)) {
+              item.id = 'list_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            }
+            this.lists.push(item);
+          });
+        }
+
+        this.activeListId = this.lists[0].id;
+        this.saveState();
+        this.showToast('📥 Backup de listas importado com sucesso!');
+        this.render();
+      } catch (err) {
+        alert('Erro ao processar arquivo JSON: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  populateCategorySelect(selectElement) {
+    if (!selectElement) return;
+    const prodCatKeys = ['hortifruti', 'carnes', 'laticinios', 'mercearia', 'padaria', 'limpeza', 'bebidas', 'higiene'];
+    const storeCatKeys = ['supermercados_bh', 'supermercados_abc', 'supermercados_rena', 'oliveira_super', 'rede_uniao'];
+
+    selectElement.innerHTML = `
+      <optgroup label="🏷️ Categorias de Produtos">
+        ${prodCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
+      </optgroup>
+      <optgroup label="🏪 Categorias por Supermercado">
+        ${storeCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
+      </optgroup>
+    `;
+  }
+
   // Renderização Geral da Aplicação
   render() {
     // 1. Atualizar Select de Listas
@@ -1033,20 +1253,10 @@ class MercadoFacilApp {
       `).join('');
     }
 
-    // 2. Preencher Select de Categorias no formulário (Com Grupos de Supermercados)
+    // 2. Preencher Select de Categorias no formulário
     const catSelect = document.getElementById('select-product-category');
     if (catSelect && (catSelect.options.length <= 1 || catSelect.querySelectorAll('optgroup').length === 0)) {
-      const prodCatKeys = ['hortifruti', 'carnes', 'laticinios', 'mercearia', 'padaria', 'limpeza', 'bebidas', 'higiene'];
-      const storeCatKeys = ['supermercados_bh', 'supermercados_abc', 'supermercados_rena', 'oliveira_super', 'rede_uniao'];
-
-      catSelect.innerHTML = `
-        <optgroup label="🏷️ Categorias de Produtos">
-          ${prodCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
-        </optgroup>
-        <optgroup label="🏪 Categorias por Supermercado">
-          ${storeCatKeys.map(k => `<option value="${k}">${CATEGORIES[k].name}</option>`).join('')}
-        </optgroup>
-      `;
+      this.populateCategorySelect(catSelect);
     }
 
     // 3. Renderizar seções
