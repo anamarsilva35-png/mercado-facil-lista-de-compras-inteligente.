@@ -33,7 +33,6 @@ O controle das despesas de supermercado pode ser difícil quando os produtos sã
 
 ## Link do projeto
 
-**URL pública:**  
 https://mercado-facil-lista-de-compras-inteligente.vercel.app/
 
 ---
