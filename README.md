@@ -22,7 +22,7 @@ O controle das despesas de supermercado pode ser difícil quando os produtos sã
 ## Principais Funcionalidades
 
 - **Cotação de Preços On-line em Tempo Real**: Consulta simulada de preços para mais de 50 produtos essenciais com atualização instantânea e indicadores de tendência (Subiu, Baixou, Estável).
-- **Comparador de Redes de Supermercados**: Compara automaticamente o valor total da sua lista entre redes como **Supermercados ABC**, **Supermercados BH**, **Oliveira Super**, **Rede União** e **Supermercados Rena**, indicando o supermercado mais barato.
+- **Comparador de Redes de Supermercados**: Compara automaticamente o valor total da sua lista entre redes como **Supermercados ABC**, **Supermercados BH**, **Oliveira Super**, **Rede União**, **Mart Minas** e **Supermercados Rena**, indicando o supermercado mais barato.
 - **Gestão por Categorias**: Organização automática em *Hortifrúti, Carnes & Aves, Laticínios, Mercearia, Padaria, Limpeza, Bebidas e Higiene*.
 - **Modo Mercado (In-Store)**: Visão focada para uso em smartphones com cards táteis, marcação no carrinho e acompanhamento do limite de orçamento com alertas.
 - **Gráficos & Analytics**: Gráfico de rosca para distribuição de gastos por categoria e gráfico de barras para comparação entre mercados.
@@ -71,4 +71,4 @@ Este projeto foi desenvolvido com a assistência do **Antigravity AI**.
 ## Link do projeto
 
 **URL pública:**  
-https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente..git
+https://mercado-facil-lista-de-compras-inteligente.vercel.app/
