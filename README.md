@@ -31,37 +31,13 @@ O controle das despesas de supermercado pode ser difícil quando os produtos sã
 
 ---
 
-## Estrutura do Projeto
-
-```text
-mercado_smart/
-├── index.html       # Estrutura semântica e abas da aplicação
-├── styles.css       # Design System, variáveis CSS, temas e glassmorphism
-├── app.js           # Gerenciamento de estado, LocalStorage e gráficos
-├── mock-prices.js   # Base de cotação e serviço de API on-line simulada
-└── assets/
-    └── banner.jpg   # Arte promocional e banner do sistema
-```
----
-
 ## Link do projeto
 
 **URL pública:**  
 https://mercado-facil-lista-de-compras-inteligente.vercel.app/
 
 ---
-
-## Como Executar Localmente
-
-1. Clone ou baixe este repositório:
-   ```bash
-   git clone https://github.com/anamarsilva35-png/mercado-facil-lista-de-compras-inteligente.git
-   ```
-2. Abra a pasta do projeto.
-3. Dê um duplo clique no arquivo `index.html` para abrir a aplicação diretamente em qualquer navegador web (Google Chrome, Microsoft Edge, Firefox, Safari).
-
----
-   
+  
 ## Tecnologias
 
 - Antigravity;
