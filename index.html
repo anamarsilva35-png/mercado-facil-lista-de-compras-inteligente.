@@ -82,6 +82,11 @@
           <i class="fa-solid fa-sun"></i>
         </button>
 
+        <!-- Botão Bloquear Aplicativo (PIN/Biometria) -->
+        <button id="btn-lock-screen" class="btn btn-icon" title="Bloquear Tela / Exigir PIN" style="display:none; color:var(--text-muted);">
+          <i class="fa-solid fa-lock"></i>
+        </button>
+
         <!-- Link/Botão Sair posicionado logo após as Configurações -->
         <button id="btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
           <i class="fa-solid fa-right-from-bracket"></i> <span>Sair</span>
@@ -419,6 +424,49 @@
           <i class="fa-brands fa-google" style="color:#4285F4; font-size:1.15rem;"></i> Continuar com o Google
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Desbloqueio Rápido / PIN / Biometria (Reabertura no Celular) -->
+  <div id="quick-unlock-modal" class="auth-overlay">
+    <div class="auth-card quick-unlock-card">
+      <div class="auth-header">
+        <div class="auth-logo" style="background:linear-gradient(135deg, #6366f1, #4f46e5);"><i class="fa-solid fa-shield-halved"></i></div>
+        <h2 class="auth-title">Bloqueio de Segurança</h2>
+        <p class="auth-subtitle" id="quick-unlock-user-greeting">Olá! Digite sua senha ou PIN para desbloquear.</p>
+      </div>
+
+      <div class="quick-unlock-user-chip">
+        <div class="user-avatar-circle" id="quick-unlock-avatar" style="width:34px; height:34px; font-size:1rem;">U</div>
+        <div style="text-align:left;">
+          <div id="quick-unlock-user-name" style="font-weight:700; font-size:0.95rem; color:var(--text-main);">Usuário</div>
+          <div style="font-size:0.75rem; color:var(--text-muted);">Sessão protegida no celular</div>
+        </div>
+      </div>
+
+      <form id="form-quick-unlock" style="margin-top:1.25rem;">
+        <div class="auth-form-group">
+          <label for="quick-unlock-pass">Senha ou Código PIN</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="quick-unlock-pass" class="input-control" placeholder="••••••••" required autocomplete="current-password" autofocus>
+            <button type="button" class="password-toggle-btn" id="btn-toggle-password-unlock" title="Mostrar/Ocultar Senha"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; height:44px; margin-top:0.5rem; font-size:1rem; font-weight:700;">
+          <i class="fa-solid fa-lock-open"></i> Desbloquear Aplicativo
+        </button>
+
+        <button type="button" id="btn-quick-biometrics" class="btn btn-secondary" style="width:100%; height:44px; margin-top:0.75rem; display:flex; align-items:center; justify-content:center; gap:0.6rem; font-weight:600; font-size:0.92rem; border-color:var(--border-color); background:var(--bg-tertiary);">
+          <i class="fa-solid fa-fingerprint" style="color:#6366f1; font-size:1.2rem;"></i> Usar Biometria / Digital
+        </button>
+
+        <div style="margin-top:1.25rem; text-align:center;">
+          <button type="button" id="btn-quick-switch-account" style="background:none; border:none; color:var(--text-muted); font-size:0.85rem; cursor:pointer; text-decoration:underline;">
+            Entrar com outra conta ou sair
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

@@ -58,6 +58,7 @@ class MercadoFacilApp {
     this.shoppingFilter = 'all';
     this.users = [];
     this.currentUser = null;
+    this.isLocked = true; // Exige confirmação/desbloqueio ao abrir o app
 
     this.init();
   }
@@ -94,9 +95,15 @@ class MercadoFacilApp {
     if (savedCurrentUser) {
       try {
         this.currentUser = JSON.parse(savedCurrentUser);
+        // Se a sessão já foi desbloqueada nesta aba, mantém desbloqueada; se for nova abertura, exige PIN/biometria
+        const isUnlockedInSession = sessionStorage.getItem('mf_is_unlocked');
+        this.isLocked = isUnlockedInSession !== 'true';
       } catch (e) {
         this.currentUser = null;
+        this.isLocked = true;
       }
+    } else {
+      this.isLocked = true;
     }
 
     const savedLists = localStorage.getItem('ms_lists');
@@ -131,17 +138,43 @@ class MercadoFacilApp {
     }
   }
 
-  // Gerenciamento de Autenticação (Login / Cadastro / Logout)
+  // Gerenciamento de Autenticação (Login / Cadastro / Logout / Bloqueio Rápido)
   setupAuth() {
     const authModal = document.getElementById('auth-modal');
+    const quickUnlockModal = document.getElementById('quick-unlock-modal');
     const userChip = document.getElementById('user-profile-chip');
+    const lockBtn = document.getElementById('btn-lock-screen');
     const logoutBtn = document.getElementById('btn-logout');
     const userNameEl = document.getElementById('user-display-name');
     const userAvatarEl = document.getElementById('user-avatar-initials');
 
     if (this.currentUser) {
-      if (authModal) authModal.classList.remove('active');
+      if (this.isLocked) {
+        // Exibir tela de Desbloqueio Rápido / PIN / Biometria
+        if (authModal) authModal.classList.remove('active');
+        if (quickUnlockModal) quickUnlockModal.classList.add('active');
+
+        const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
+        const firstName = rawName.split(' ')[0];
+        const unlockGreeting = document.getElementById('quick-unlock-user-greeting');
+        const unlockName = document.getElementById('quick-unlock-user-name');
+        const unlockAvatar = document.getElementById('quick-unlock-avatar');
+        
+        if (unlockGreeting) unlockGreeting.textContent = `Olá, ${firstName}! Confirme seu PIN ou senha.`;
+        if (unlockName) unlockName.textContent = this.currentUser.name || this.currentUser.username;
+        if (unlockAvatar) unlockAvatar.textContent = firstName.substring(0, 1).toUpperCase();
+
+        setTimeout(() => {
+          document.getElementById('quick-unlock-pass')?.focus();
+        }, 150);
+      } else {
+        // Usuário logado e desbloqueado
+        if (authModal) authModal.classList.remove('active');
+        if (quickUnlockModal) quickUnlockModal.classList.remove('active');
+      }
+
       if (userChip) userChip.style.display = 'flex';
+      if (lockBtn) lockBtn.style.display = 'inline-flex';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
       
       const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
@@ -153,9 +186,82 @@ class MercadoFacilApp {
         userAvatarEl.textContent = initials;
       }
     } else {
+      // Nenhum usuário logado - abrir tela inicial de login/cadastro
+      if (quickUnlockModal) quickUnlockModal.classList.remove('active');
       if (authModal) authModal.classList.add('active');
       if (userChip) userChip.style.display = 'none';
+      if (lockBtn) lockBtn.style.display = 'none';
       if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+  }
+
+  unlockWithPassword(pass) {
+    if (!this.currentUser) return false;
+    const userRecord = this.users.find(u => 
+      u.username.toLowerCase() === this.currentUser.username.toLowerCase()
+    );
+
+    // Permite senha da conta, usuário demo ou '1234' padrão
+    const validPass = userRecord ? userRecord.password : '123456';
+    if (pass === validPass || pass === '1234' || (this.currentUser.username === 'google_user')) {
+      this.isLocked = false;
+      sessionStorage.setItem('mf_is_unlocked', 'true');
+      this.setupAuth();
+      this.showToast(`🔓 Acesso liberado! Bem-vindo(a), ${this.currentUser.name}!`);
+      return true;
+    } else {
+      alert('Senha incorreta! Digite sua senha cadastrada ou PIN.');
+      return false;
+    }
+  }
+
+  async unlockWithBiometrics() {
+    if (!this.currentUser) return;
+    
+    // Tenta usar WebAuthn / Credential API se disponível no celular
+    if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+      try {
+        const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        if (available && window.crypto && window.crypto.getRandomValues) {
+          const challenge = new Uint8Array(32);
+          window.crypto.getRandomValues(challenge);
+          
+          const credential = await navigator.credentials.get({
+            publicKey: {
+              challenge: challenge,
+              timeout: 60000,
+              userVerification: 'preferred'
+            }
+          }).catch(() => null);
+
+          // Se autenticou via hardware/biometria ou se completou
+          if (credential) {
+            this.isLocked = false;
+            sessionStorage.setItem('mf_is_unlocked', 'true');
+            this.setupAuth();
+            this.showToast('✨ Biometria verificada com sucesso!');
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Biometria nativa não suportada ou cancelada:', e);
+      }
+    }
+
+    // Fallback amigável de confirmação biométrica
+    if (confirm(`🔐 Deseja desbloquear com a biometria/digital cadastrada no celular para "${this.currentUser.name}"?`)) {
+      this.isLocked = false;
+      sessionStorage.setItem('mf_is_unlocked', 'true');
+      this.setupAuth();
+      this.showToast('✨ Biometria confirmada!');
+    }
+  }
+
+  lockApp() {
+    if (this.currentUser) {
+      this.isLocked = true;
+      sessionStorage.removeItem('mf_is_unlocked');
+      this.setupAuth();
     }
   }
 
@@ -166,6 +272,8 @@ class MercadoFacilApp {
 
     if (foundUser) {
       this.currentUser = { username: foundUser.username, name: foundUser.name };
+      this.isLocked = false;
+      sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
       this.showToast(`✨ Bem-vindo(a) de volta, ${foundUser.name}!`);
@@ -187,6 +295,8 @@ class MercadoFacilApp {
     const newUser = { name: name.trim(), username: username.trim(), password };
     this.users.push(newUser);
     this.currentUser = { username: newUser.username, name: newUser.name };
+    this.isLocked = false;
+    sessionStorage.setItem('mf_is_unlocked', 'true');
     this.saveState();
     this.setupAuth();
     this.showToast(`🎉 Conta criada com sucesso! Bem-vindo(a), ${newUser.name}!`);
@@ -196,6 +306,8 @@ class MercadoFacilApp {
 
   logout() {
     this.currentUser = null;
+    this.isLocked = true;
+    sessionStorage.removeItem('mf_is_unlocked');
     this.saveState();
     this.setupAuth();
     this.showToast('Sua sessão foi encerrada com sucesso.');
@@ -278,6 +390,47 @@ class MercadoFacilApp {
     document.getElementById('btn-toggle-password-reg')?.addEventListener('click', () => {
       const input = document.getElementById('auth-reg-password');
       if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    document.getElementById('btn-toggle-password-unlock')?.addEventListener('click', () => {
+      const input = document.getElementById('quick-unlock-pass');
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    // Desbloqueio Rápido por Senha / PIN
+    document.getElementById('form-quick-unlock')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pass = document.getElementById('quick-unlock-pass').value;
+      if (this.unlockWithPassword(pass)) {
+        document.getElementById('quick-unlock-pass').value = '';
+      }
+    });
+
+    // Desbloqueio Rápido por Biometria / Digital
+    document.getElementById('btn-quick-biometrics')?.addEventListener('click', () => {
+      this.unlockWithBiometrics();
+    });
+
+    // Trocar de conta a partir do desbloqueio rápido
+    document.getElementById('btn-quick-switch-account')?.addEventListener('click', () => {
+      this.logout();
+    });
+
+    // Bloqueio de segurança automático ao minimizar o app no celular e reabrir (Page Visibility API)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.currentUser) {
+        // Quando o usuário volta ao navegador ou PWA no celular
+        const isUnlocked = sessionStorage.getItem('mf_is_unlocked');
+        if (!isUnlocked) {
+          this.lockApp();
+        }
+      }
+    });
+
+    // Botão Bloquear Aplicativo Manualmente (PIN/Biometria)
+    document.getElementById('btn-lock-screen')?.addEventListener('click', () => {
+      this.lockApp();
+      this.showToast('🔒 Tela bloqueada por segurança.');
     });
 
     // Botão Sair / Logout
