@@ -100,7 +100,7 @@
     </header>
 
     <!-- Banner Demonstrativo do Sistema -->
-    <div style="margin: 0 auto 1.5rem auto; width:100%; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-color); max-height:180px; position:relative; box-shadow:var(--shadow-sm);">
+    <div class="hero-promo-banner" style="margin: 0 auto 1.5rem auto; width:100%; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-color); max-height:180px; position:relative; box-shadow:var(--shadow-sm);">
       <img src="assets/banner.jpg" alt="Mercado Fácil — Painel de Cotação de Preços" style="width:100%; height:180px; object-fit:cover; filter:brightness(0.75);">
       <div style="position:absolute; top:0; bottom:0; left:0; right:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:1.25rem; color:white; text-shadow:0 2px 14px rgba(0,0,0,0.9); background:rgba(0, 0, 0, 0.3);">
         <span style="background:var(--primary); padding:0.25rem 0.85rem; border-radius:var(--radius-full); font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(16,185,129,0.4);">
@@ -226,18 +226,31 @@
       </button>
     </nav>
 
-    <!-- Conteúdo das Abas -->
+    <!-- Conteúdo Principal / Seções Verticais no Mobile -->
 
-    <!-- Aba 1: Minha Lista Categorizada -->
+    <!-- Seção 1: Minha Lista Categorizada -->
     <section id="tab-items" class="tab-panel active">
+      <div class="mobile-section-header">
+        <div class="mobile-section-title">
+          <i class="fa-solid fa-list-check" style="color:var(--primary);"></i>
+          <span>Minha Lista de Itens</span>
+        </div>
+        <span class="mobile-section-badge">Principal</span>
+      </div>
       <div id="category-items-container"></div>
     </section>
 
-    <!-- Aba 2: Modo Mercado (Carrinho no Celular) -->
+    <!-- Seção 2: Modo Mercado (Carrinho no Celular) -->
     <section id="tab-shopping" class="tab-panel">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
-        <h3>Modo Compras no Mercado</h3>
-        <div style="display:flex; gap:0.5rem;">
+      <div class="mobile-section-header">
+        <div class="mobile-section-title">
+          <i class="fa-solid fa-cart-shopping" style="color:var(--secondary);"></i>
+          <span>Modo Mercado (Check-in Carrinho)</span>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+        <h3 class="desktop-only-heading">Modo Compras no Mercado</h3>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
           <button class="btn btn-secondary filter-chip active" data-filter="all">Todos os Itens</button>
           <button class="btn btn-secondary filter-chip" data-filter="pending">Apenas Pendentes</button>
           <button class="btn btn-secondary filter-chip" data-filter="checked">Já no Carrinho</button>
@@ -246,13 +259,26 @@
       <div id="shopping-cards-grid" class="shopping-grid"></div>
     </section>
 
-    <!-- Aba 3: Comparador de Supermercados -->
+    <!-- Seção 3: Comparador de Supermercados -->
     <section id="tab-comparison" class="tab-panel">
+      <div class="mobile-section-header">
+        <div class="mobile-section-title">
+          <i class="fa-solid fa-shop" style="color:#ea580c;"></i>
+          <span>Comparador de Supermercados</span>
+        </div>
+        <span class="mobile-section-badge" style="background:rgba(234, 88, 12, 0.15); color:#ea580c;">Cotações</span>
+      </div>
       <div id="store-comparison-container"></div>
     </section>
 
-    <!-- Aba 4: Gráficos e Analytics -->
+    <!-- Seção 4: Gráficos e Analytics -->
     <section id="tab-reports" class="tab-panel">
+      <div class="mobile-section-header">
+        <div class="mobile-section-title">
+          <i class="fa-solid fa-chart-pie" style="color:var(--accent);"></i>
+          <span>Gráficos & Relatórios</span>
+        </div>
+      </div>
       <div class="charts-grid">
         <div class="chart-card">
           <h3 class="chart-title"><i class="fa-solid fa-chart-pie" style="color:var(--primary);"></i> Gastos por Categoria</h3>

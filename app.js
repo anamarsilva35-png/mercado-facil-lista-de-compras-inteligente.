@@ -552,6 +552,36 @@ class MercadoFacilApp {
       });
     });
 
+    // Scroll spy para destacar botão da seção ativa durante rolagem no celular
+    window.addEventListener('scroll', () => {
+      if (window.innerWidth > 768) return;
+      const sections = ['tab-items', 'tab-shopping', 'tab-comparison', 'tab-reports'];
+      const scrollPosition = window.pageYOffset + 150;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i]);
+        if (el && el.offsetTop <= scrollPosition) {
+          document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.getAttribute('data-tab') === sections[i]) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+          break;
+        }
+      }
+    }, { passive: true });
+
+    // Re-renderizar gráficos e tabelas caso mude orientação ou redimensione tela
+    window.addEventListener('resize', () => {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        this.renderStoreComparison();
+        this.renderCharts();
+      }
+    });
+
     // Botão Copiar Lista
     document.getElementById('btn-copy-list')?.addEventListener('click', () => this.copyListToClipboard());
 
@@ -604,20 +634,43 @@ class MercadoFacilApp {
     });
   }
 
-  // Alternar abas
+  // Alternar abas ou rolar suavemente no celular (Layout Vertical Único)
   switchTab(tabId) {
     this.currentTab = tabId;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const isMobile = window.innerWidth <= 768;
 
-    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-    const activePanel = document.getElementById(tabId);
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      if (b.getAttribute('data-tab') === tabId) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
 
-    if (activeBtn) activeBtn.classList.add('active');
-    if (activePanel) activePanel.classList.add('active');
+    if (isMobile) {
+      // No celular, todas as seções ficam visíveis na mesma página vertical
+      // Rolagem suave e precisa até a seção desejada
+      const targetEl = document.getElementById(tabId);
+      if (targetEl) {
+        const headerOffset = 100;
+        const elementPosition = targetEl.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({
+          top: Math.max(0, offsetPosition),
+          behavior: 'smooth'
+        });
+      }
+      this.renderStoreComparison();
+      this.renderCharts();
+    } else {
+      // No Desktop, mantém o sistema de abas clássico
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const activePanel = document.getElementById(tabId);
+      if (activePanel) activePanel.classList.add('active');
 
-    if (tabId === 'tab-comparison') this.renderStoreComparison();
-    if (tabId === 'tab-reports') this.renderCharts();
+      if (tabId === 'tab-comparison') this.renderStoreComparison();
+      if (tabId === 'tab-reports') this.renderCharts();
+    }
   }
 
   // Lógica Autocomplete com Sugestão de Menor Preço On-line por Supermercado
@@ -1435,8 +1488,15 @@ class MercadoFacilApp {
     this.renderDashboardMetrics();
     this.renderCategoryList();
     this.renderShoppingMode();
-    if (this.currentTab === 'tab-comparison') this.renderStoreComparison();
-    if (this.currentTab === 'tab-reports') this.renderCharts();
+    
+    // Se for celular (visualização vertical unificada) ou se a aba específica estiver ativa
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile || this.currentTab === 'tab-comparison') {
+      this.renderStoreComparison();
+    }
+    if (isMobile || this.currentTab === 'tab-reports') {
+      this.renderCharts();
+    }
   }
 }
 

@@ -394,6 +394,10 @@ h1, h2, h3, h4, .brand-title {
   display: block;
 }
 
+.mobile-section-header {
+  display: none;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1044,37 +1048,78 @@ h1, h2, h3, h4, .brand-title {
 /* Responsive Media Queries para Celulares e Tablets */
 @media (max-width: 768px) {
   .app-container {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   .app-header {
     flex-wrap: wrap;
-    padding: 0.85rem 1rem;
-    gap: 0.75rem;
-    top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    gap: 0.4rem;
+    top: 0.25rem;
+    margin-bottom: 0.75rem;
   }
 
   .brand-section {
     flex: 1;
+    gap: 0.5rem;
+  }
+
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+    font-size: 1.05rem;
+  }
+
+  .brand-info h1 {
+    font-size: 1.1rem;
   }
 
   .header-actions {
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.3rem;
     width: 100%;
     justify-content: flex-start;
+    align-items: center;
   }
 
   .list-selector-wrapper {
-    flex: 1;
-    min-width: 160px;
+    flex: 1 1 130px;
+    min-width: 120px;
+    gap: 0.25rem;
   }
 
   .select-list {
     flex: 1;
     width: 100%;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    gap: 0.35rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
     font-size: 0.85rem;
-    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .user-profile-chip {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .user-avatar-circle {
+    width: 22px;
+    height: 22px;
+    font-size: 0.7rem;
   }
 
   .btn-sync span {
@@ -1085,13 +1130,36 @@ h1, h2, h3, h4, .brand-title {
     display: none !important;
   }
 
+  .hero-promo-banner {
+    margin-bottom: 0.75rem !important;
+    max-height: 120px !important;
+  }
+
+  .hero-promo-banner img {
+    height: 120px !important;
+  }
+
+  .hero-promo-banner h2 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .hero-promo-banner p {
+    font-size: 0.75rem !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .dashboard-metrics {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .metric-card {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .auth-overlay {
@@ -1105,10 +1173,22 @@ h1, h2, h3, h4, .brand-title {
     overflow-y: auto;
   }
 
+  /* Barra de navegação rápida horizontal sticky para celular (Single Vertical Page) */
   .tab-navigation {
+    position: sticky;
+    top: 3.8rem;
+    z-index: 95;
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-sm);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding: 0.35rem 0.5rem;
+    margin-bottom: 1.25rem;
+    border-radius: var(--radius-full);
   }
 
   .tab-navigation::-webkit-scrollbar {
@@ -1116,18 +1196,85 @@ h1, h2, h3, h4, .brand-title {
   }
 
   .tab-btn {
-    min-width: 120px;
-    padding: 0.55rem 0.75rem;
-    font-size: 0.82rem;
+    min-width: max-content;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-full);
+  }
+
+  .tab-btn.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+  }
+
+  /* No Celular: TODAS AS SEÇÕES FICAM VISÍVEIS EM UMA ÚNICA PÁGINA VERTICAL */
+  .tab-panel {
+    display: block !important;
+    margin-bottom: 2rem;
+    scroll-margin-top: 5.5rem;
+  }
+
+  .desktop-only-heading {
+    display: none !important;
+  }
+
+  .mobile-section-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .mobile-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-main);
+  }
+
+  .mobile-section-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-full);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--primary);
+    text-transform: uppercase;
   }
 
   .category-group {
     overflow-x: auto;
+    margin-bottom: 1rem;
   }
 
   .items-table th, .items-table td {
-    padding: 0.6rem 0.65rem;
+    padding: 0.55rem 0.6rem;
     font-size: 0.82rem;
+  }
+
+  .shopping-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  .store-card-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .chart-card {
+    padding: 0.85rem;
+  }
+
+  .chart-card canvas {
+    max-width: 100% !important;
+    height: auto !important;
   }
 }
 
