@@ -148,6 +148,8 @@ class MercadoFacilApp {
     const userNameEl = document.getElementById('user-display-name');
     const userAvatarEl = document.getElementById('user-avatar-initials');
 
+    const openLoginBtn = document.getElementById('btn-open-login');
+
     if (this.currentUser) {
       if (this.isLocked) {
         // Exibir tela de Desbloqueio Rápido / PIN / Biometria
@@ -176,6 +178,7 @@ class MercadoFacilApp {
       if (userChip) userChip.style.display = 'flex';
       if (lockBtn) lockBtn.style.display = 'inline-flex';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      if (openLoginBtn) openLoginBtn.style.display = 'none';
       
       const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
       const firstName = rawName.split(' ')[0];
@@ -186,12 +189,12 @@ class MercadoFacilApp {
         userAvatarEl.textContent = initials;
       }
     } else {
-      // Nenhum usuário logado - abrir tela inicial de login/cadastro
+      // Modo visitante / Nenhum usuário logado
       if (quickUnlockModal) quickUnlockModal.classList.remove('active');
-      if (authModal) authModal.classList.add('active');
       if (userChip) userChip.style.display = 'none';
       if (lockBtn) lockBtn.style.display = 'none';
       if (logoutBtn) logoutBtn.style.display = 'none';
+      if (openLoginBtn) openLoginBtn.style.display = 'inline-flex';
     }
   }
 
@@ -379,6 +382,22 @@ class MercadoFacilApp {
       this.setupAuth();
       this.showToast('🌐 Autenticado com sucesso via Conta Google!');
       this.render();
+    });
+
+    // Abrir Modal de Login (para usuário visitante)
+    document.getElementById('btn-open-login')?.addEventListener('click', () => {
+      document.getElementById('auth-modal')?.classList.add('active');
+    });
+
+    // Fechar Modal de Login
+    document.getElementById('btn-close-auth-modal')?.addEventListener('click', () => {
+      document.getElementById('auth-modal')?.classList.remove('active');
+    });
+
+    // Continuar como Visitante sem login
+    document.getElementById('btn-continue-guest')?.addEventListener('click', () => {
+      document.getElementById('auth-modal')?.classList.remove('active');
+      this.showToast('👋 Navegando no modo visitante!');
     });
 
     // Alternar visibilidade da senha

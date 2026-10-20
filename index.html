@@ -82,6 +82,11 @@
           <i class="fa-solid fa-sun"></i>
         </button>
 
+        <!-- Botão Abrir Login (quando em modo visitante) -->
+        <button id="btn-open-login" class="btn btn-secondary" title="Fazer Login" style="display:inline-flex;">
+          <i class="fa-solid fa-user"></i> <span class="hide-mobile">Entrar</span>
+        </button>
+
         <!-- Botão Bloquear Aplicativo (PIN/Biometria) -->
         <button id="btn-lock-screen" class="btn btn-icon" title="Bloquear Tela / Exigir PIN" style="display:none; color:var(--text-muted);">
           <i class="fa-solid fa-lock"></i>
@@ -355,8 +360,11 @@
   </div>
 
   <!-- Modal: Autenticação (Login / Cadastro) -->
-  <div id="auth-modal" class="auth-overlay active">
+  <div id="auth-modal" class="auth-overlay">
     <div class="auth-card">
+      <button type="button" class="auth-card-close" id="btn-close-auth-modal" title="Fechar e navegar sem login" aria-label="Fechar modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
       <div class="auth-header">
         <div class="auth-logo"><i class="fa-solid fa-cart-shopping"></i></div>
         <h2 class="auth-title">Mercado Fácil</h2>
@@ -422,6 +430,10 @@
 
         <button type="button" id="btn-fill-google-user" class="btn btn-secondary" style="width:100%; height:44px; display:flex; align-items:center; justify-content:center; gap:0.65rem; font-weight:600; font-size:0.92rem; border-color:var(--border-color); background:var(--bg-tertiary);">
           <i class="fa-brands fa-google" style="color:#4285F4; font-size:1.15rem;"></i> Continuar com o Google
+        </button>
+
+        <button type="button" id="btn-continue-guest" class="btn btn-secondary" style="width:100%; height:40px; margin-top:0.65rem; display:flex; align-items:center; justify-content:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted); border-color:transparent; background:transparent;">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Continuar sem login (Modo Visitante)
         </button>
       </div>
     </div>
