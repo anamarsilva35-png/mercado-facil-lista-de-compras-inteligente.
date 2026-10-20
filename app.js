@@ -1229,7 +1229,7 @@ class MercadoFacilApp {
   populateCategorySelect(selectElement) {
     if (!selectElement) return;
     const prodCatKeys = ['hortifruti', 'carnes', 'laticinios', 'mercearia', 'padaria', 'limpeza', 'bebidas', 'higiene'];
-    const storeCatKeys = ['supermercados_bh', 'supermercados_abc', 'supermercados_rena', 'oliveira_super', 'rede_uniao'];
+    const storeCatKeys = ['mart_minas', 'supermercados_bh', 'supermercados_abc', 'supermercados_rena', 'oliveira_super', 'rede_uniao'];
 
     selectElement.innerHTML = `
       <optgroup label="🏷️ Categorias de Produtos">

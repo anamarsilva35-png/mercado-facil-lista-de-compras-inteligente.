@@ -4,6 +4,7 @@
  */
 
 const SUPERMARKETS = [
+  { id: 'mart_minas', name: 'Mart Minas', shortName: 'Mart Minas', color: '#e11d48', badge: 'Atacado & Varejo • Menor Preço', factor: 0.89, icon: 'fa-boxes-stacked' },
   { id: 'supermercados_bh', name: 'Supermercados BH', shortName: 'BH', color: '#dc2626', badge: 'Meu BH • Líder em Ofertas', factor: 0.91, icon: 'fa-cart-shopping' },
   { id: 'supermercados_abc', name: 'Supermercados ABC', shortName: 'ABC', color: '#2563eb', badge: 'Atacado & Varejo', factor: 0.93, icon: 'fa-store' },
   { id: 'supermercados_rena', name: 'Supermercados Rena', shortName: 'Rena', color: '#ea580c', badge: 'Meu Rena • Tradição & Qualidade', factor: 0.96, icon: 'fa-bag-shopping' },
@@ -21,6 +22,7 @@ const CATEGORIES = {
   bebidas: { name: 'Bebidas', icon: 'fa-wine-bottle', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
   higiene: { name: 'Higiene & Cuidados', icon: 'fa-pump-soap', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
   // Categorias por Nome do Supermercado
+  mart_minas: { name: 'Mart Minas', icon: 'fa-boxes-stacked', color: '#e11d48', bg: 'rgba(225, 29, 72, 0.15)' },
   supermercados_bh: { name: 'Supermercados BH', icon: 'fa-cart-shopping', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.15)' },
   supermercados_abc: { name: 'Supermercados ABC', icon: 'fa-store', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.15)' },
   supermercados_rena: { name: 'Supermercados Rena', icon: 'fa-bag-shopping', color: '#ea580c', bg: 'rgba(234, 88, 12, 0.15)' },
