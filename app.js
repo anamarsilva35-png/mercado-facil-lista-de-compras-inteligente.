@@ -200,8 +200,8 @@ class MercadoFacilApp {
       if (quickUnlockModal) quickUnlockModal.classList.remove('active');
       if (authModal) authModal.classList.add('active');
       
-      // No celular, oculta todo o restante do app para aparecer SOMENTE o login
-      if (isMobile && appContainer) {
+      // Oculta todo o restante do app em TODOS os dispositivos para aparecer SOMENTE o login
+      if (appContainer) {
         appContainer.style.display = 'none';
       }
 
@@ -405,10 +405,9 @@ class MercadoFacilApp {
 
     // Fechar Modal de Login
     document.getElementById('btn-close-auth-modal')?.addEventListener('click', () => {
-      const isMobile = window.innerWidth <= 768;
       const appContainer = document.querySelector('.app-container');
-      if (isMobile && !this.currentUser) {
-        // No celular, a exigência é exibir somente o login até autenticar
+      if (!this.currentUser) {
+        // Em todos os dispositivos, exige login antes de acessar o aplicativo
         this.showToast('ℹ️ Faça login ou crie sua conta para acessar o aplicativo.');
       } else {
         document.getElementById('auth-modal')?.classList.remove('active');
@@ -416,12 +415,9 @@ class MercadoFacilApp {
       }
     });
 
-    // Continuar como Visitante sem login
+    // Continuar como Visitante sem login (exige autenticação em todos os dispositivos)
     document.getElementById('btn-continue-guest')?.addEventListener('click', () => {
-      const appContainer = document.querySelector('.app-container');
-      document.getElementById('auth-modal')?.classList.remove('active');
-      if (appContainer) appContainer.style.display = 'block';
-      this.showToast('👋 Navegando no modo visitante!');
+      this.showToast('ℹ️ Faça login ou crie sua conta para acessar o aplicativo.');
     });
 
     // Alternar visibilidade da senha
