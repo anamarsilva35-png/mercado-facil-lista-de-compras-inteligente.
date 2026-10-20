@@ -297,7 +297,15 @@ class MercadoFacilApp {
       this.render();
       return true;
     } else {
-      alert('Usuário ou senha incorretos. Verifique suas credenciais ou use a Conta Demo.');
+      // Verifica se o usuário existe mas a senha está errada, ou se não existe (foi criado em outro dispositivo)
+      const usernameExists = this.users.some(u => u.username.toLowerCase() === username.toLowerCase().trim());
+      if (!usernameExists && username.trim().length > 0) {
+        const msg = `Usuário "${username.trim()}" não encontrado neste dispositivo.\n\n` +
+          `Se você criou sua conta em outro celular ou computador, use a aba \"Outro Dispositivo\" para transferir sua conta.`;
+        alert(msg);
+      } else {
+        alert('Usuário ou senha incorretos. Verifique suas credenciais.');
+      }
       return false;
     }
   }
@@ -328,6 +336,46 @@ class MercadoFacilApp {
     this.saveState();
     this.setupAuth();
     this.showToast('Sua sessão foi encerrada com sucesso.');
+  }
+
+  // Gera código de transferência de conta entre dispositivos (Base64 simples)
+  generateTransferCode(username, password) {
+    const user = this.users.find(u =>
+      u.username.toLowerCase() === username.toLowerCase() && u.password === password
+    );
+    if (!user) return null;
+    const payload = JSON.stringify({ n: user.name, u: user.username, p: user.password, v: 1 });
+    return btoa(unescape(encodeURIComponent(payload)));
+  }
+
+  // Importa conta via código de transferência
+  importTransferCode(code) {
+    try {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+      if (!payload.u || !payload.p || !payload.n) throw new Error('Inválido');
+
+      // Verifica se já existe usuário com mesmo username
+      const exists = this.users.find(u => u.username.toLowerCase() === payload.u.toLowerCase());
+      if (!exists) {
+        this.users.push({ name: payload.n, username: payload.u, password: payload.p });
+      } else {
+        // Atualiza senha caso tenha sido alterada
+        exists.name = payload.n;
+        exists.password = payload.p;
+      }
+
+      this.currentUser = { username: payload.u, name: payload.n };
+      this.isLocked = false;
+      sessionStorage.setItem('mf_is_unlocked', 'true');
+      this.saveState();
+      this.setupAuth();
+      this.showToast(`🎉 Conta importada! Bem-vindo(a), ${payload.n}!`);
+      this.render();
+      return true;
+    } catch (e) {
+      alert('Código inválido ou corrompido. Gere um novo código no dispositivo de origem.');
+      return false;
+    }
   }
 
   setupTheme() {
@@ -388,8 +436,29 @@ class MercadoFacilApp {
       const passVal = document.getElementById('auth-reg-password').value;
       this.register(nameVal, userVal, passVal);
     });
+    // Aba Outro Dispositivo / Transferência
+    document.getElementById('tab-auth-transfer')?.addEventListener('click', () => {
+      ['tab-auth-login','tab-auth-register','tab-auth-transfer'].forEach(id =>
+        document.getElementById(id)?.classList.remove('active')
+      );
+      document.getElementById('tab-auth-transfer').classList.add('active');
+      document.getElementById('form-auth-login').style.display = 'none';
+      document.getElementById('form-auth-register').style.display = 'none';
+      document.getElementById('form-auth-transfer').style.display = 'block';
 
-    // Botão Preencher com Conta Google
+      // Popular select de usuários disponíveis neste dispositivo
+      const sel = document.getElementById('transfer-user-select');
+      if (sel) {
+        sel.innerHTML = '<option value="">Selecione seu usuário...</option>';
+        this.users.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.username;
+          opt.textContent = `${u.name} (@${u.username})`;
+          sel.appendChild(opt);
+        });
+      }
+    });
+
     document.getElementById('btn-fill-google-user')?.addEventListener('click', () => {
       this.currentUser = { username: 'google_user', name: 'Ana Maria Silva (Google)' };
       this.saveState();
@@ -419,8 +488,45 @@ class MercadoFacilApp {
     document.getElementById('btn-continue-guest')?.addEventListener('click', () => {
       this.showToast('ℹ️ Faça login ou crie sua conta para acessar o aplicativo.');
     });
+    // Gerar código de transferência
+    document.getElementById('btn-generate-transfer-code')?.addEventListener('click', () => {
+      const username = document.getElementById('transfer-user-select')?.value;
+      const password = document.getElementById('transfer-confirm-password')?.value;
+      if (!username) { this.showToast('⚠️ Selecione um usuário.'); return; }
+      if (!password) { this.showToast('⚠️ Digite sua senha para confirmar.'); return; }
+      const code = this.generateTransferCode(username, password);
+      if (!code) {
+        this.showToast('❌ Senha incorreta. Verifique e tente novamente.');
+        return;
+      }
+      const display = document.getElementById('transfer-code-display');
+      const result = document.getElementById('transfer-code-result');
+      if (display) display.value = code;
+      if (result) result.style.display = 'block';
+      this.showToast('✅ Código gerado! Copie e use no outro dispositivo.');
+    });
 
-    // Alternar visibilidade da senha
+    // Copiar código gerado
+    document.getElementById('btn-copy-transfer-code')?.addEventListener('click', () => {
+      const code = document.getElementById('transfer-code-display')?.value;
+      if (code) {
+        navigator.clipboard.writeText(code).then(() => this.showToast('📋 Código copiado!'));
+      }
+    });
+
+    // Importar código no dispositivo de destino
+    document.getElementById('btn-import-transfer-code')?.addEventListener('click', () => {
+      const code = document.getElementById('transfer-import-code')?.value;
+      if (!code) { this.showToast('⚠️ Cole o código de transferência.'); return; }
+      this.importTransferCode(code);
+    });
+
+    // Toggle senha transferência
+    document.getElementById('btn-toggle-transfer-pass')?.addEventListener('click', () => {
+      const input = document.getElementById('transfer-confirm-password');
+      if (input) input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
     document.getElementById('btn-toggle-password-login')?.addEventListener('click', () => {
       const input = document.getElementById('auth-login-password');
       if (input) input.type = input.type === 'password' ? 'text' : 'password';
