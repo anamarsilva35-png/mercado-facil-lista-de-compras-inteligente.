@@ -143,10 +143,17 @@ class MercadoFacilApp {
     const authModal = document.getElementById('auth-modal');
     const quickUnlockModal = document.getElementById('quick-unlock-modal');
     const userChip = document.getElementById('user-profile-chip');
+    const sidebarUserChip = document.getElementById('sidebar-user-chip');
     const lockBtn = document.getElementById('btn-lock-screen');
+    const sidebarLockBtn = document.getElementById('sidebar-btn-lock');
     const logoutBtn = document.getElementById('btn-logout');
+    const sidebarLogoutBtn = document.getElementById('sidebar-btn-logout');
+    const openLoginBtn = document.getElementById('btn-open-login');
+    const sidebarLoginBtn = document.getElementById('sidebar-btn-login');
     const userNameEl = document.getElementById('user-display-name');
+    const sidebarUserNameEl = document.getElementById('sidebar-user-name');
     const userAvatarEl = document.getElementById('user-avatar-initials');
+    const sidebarAvatarEl = document.getElementById('sidebar-avatar-initials');
 
     const isMobile = window.innerWidth <= 768;
     const appContainer = document.querySelector('.app-container');
@@ -157,7 +164,7 @@ class MercadoFacilApp {
         if (authModal) authModal.classList.remove('active');
         if (quickUnlockModal) quickUnlockModal.classList.add('active');
 
-        // Se estiver bloqueado no celular, oculta a interface do app para focar 100% no desbloqueio
+        // Se estiver bloqueado no celular, oculta a interface do app para focar no desbloqueio
         if (isMobile && appContainer) {
           appContainer.style.display = 'none';
         }
@@ -179,36 +186,53 @@ class MercadoFacilApp {
         // Usuário logado e desbloqueado
         if (authModal) authModal.classList.remove('active');
         if (quickUnlockModal) quickUnlockModal.classList.remove('active');
-        if (appContainer) appContainer.style.display = 'block';
+        if (appContainer) appContainer.style.display = '';
       }
 
       if (userChip) userChip.style.display = 'flex';
+      if (sidebarUserChip) sidebarUserChip.style.display = 'flex';
       if (lockBtn) lockBtn.style.display = 'inline-flex';
+      if (sidebarLockBtn) sidebarLockBtn.style.display = 'inline-flex';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'inline-flex';
       if (openLoginBtn) openLoginBtn.style.display = 'none';
+      if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'none';
+
+      const menuLock = document.getElementById('menu-item-lock');
+      const menuLogout = document.getElementById('menu-item-logout');
+      if (menuLock) menuLock.style.display = 'flex';
+      if (menuLogout) menuLogout.style.display = 'flex';
       
       const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
       const firstName = rawName.split(' ')[0];
       if (userNameEl) userNameEl.textContent = `Olá, ${firstName}`;
+      if (sidebarUserNameEl) sidebarUserNameEl.textContent = this.currentUser.name || firstName;
       
-      if (userAvatarEl) {
-        const initials = firstName.substring(0, 1).toUpperCase();
-        userAvatarEl.textContent = initials;
-      }
+      const initials = firstName.substring(0, 1).toUpperCase();
+      if (userAvatarEl) userAvatarEl.textContent = initials;
+      if (sidebarAvatarEl) sidebarAvatarEl.textContent = initials;
     } else {
-      // Nenhum usuário logado: Exibir obrigatoriamente a página/tela de Login
+      // Nenhum usuário logado: Exibir modal de Login
       if (quickUnlockModal) quickUnlockModal.classList.remove('active');
       if (authModal) authModal.classList.add('active');
       
-      // Oculta todo o restante do app em TODOS os dispositivos para aparecer SOMENTE o login
       if (appContainer) {
         appContainer.style.display = 'none';
       }
 
       if (userChip) userChip.style.display = 'none';
+      if (sidebarUserChip) sidebarUserChip.style.display = 'none';
       if (lockBtn) lockBtn.style.display = 'none';
+      if (sidebarLockBtn) sidebarLockBtn.style.display = 'none';
       if (logoutBtn) logoutBtn.style.display = 'none';
+      if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'none';
       if (openLoginBtn) openLoginBtn.style.display = 'inline-flex';
+      if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'inline-flex';
+
+      const menuLock = document.getElementById('menu-item-lock');
+      const menuLogout = document.getElementById('menu-item-logout');
+      if (menuLock) menuLock.style.display = 'none';
+      if (menuLogout) menuLogout.style.display = 'none';
     }
   }
 
@@ -585,15 +609,111 @@ class MercadoFacilApp {
       }
     });
 
-    // Seleção de lista ativa
+    // Fechar menu lateral (helper)
+    const closeSidebar = () => {
+      document.getElementById('app-sidebar')?.classList.remove('open');
+      document.getElementById('sidebar-backdrop')?.classList.remove('active');
+    };
+
+    // Botão abrir menu lateral (mobile/tablet)
+    document.getElementById('btn-toggle-sidebar')?.addEventListener('click', () => {
+      document.getElementById('app-sidebar')?.classList.add('open');
+      document.getElementById('sidebar-backdrop')?.classList.add('active');
+    });
+
+    // Botões de fechar menu lateral
+    document.getElementById('btn-close-sidebar')?.addEventListener('click', closeSidebar);
+    document.getElementById('sidebar-backdrop')?.addEventListener('click', closeSidebar);
+
+    // Dropdown de mais opções no mobile
+    const dropdown = document.getElementById('more-options-dropdown');
+    const dropdownBackdrop = document.getElementById('more-options-backdrop');
+    const toggleMoreDropdown = () => {
+      const isOpen = dropdown?.classList.contains('active');
+      if (isOpen) {
+        dropdown?.classList.remove('active');
+        dropdownBackdrop?.classList.remove('active');
+      } else {
+        dropdown?.classList.add('active');
+        dropdownBackdrop?.classList.add('active');
+      }
+    };
+
+    document.getElementById('btn-more-options')?.addEventListener('click', toggleMoreDropdown);
+    document.getElementById('btn-close-dropdown')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+    });
+    dropdownBackdrop?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+    });
+
+    // Ações do Dropdown Mobile
+    document.getElementById('menu-item-whatsapp')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.shareWhatsApp();
+    });
+    document.getElementById('menu-item-copy')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.copyListToClipboard();
+    });
+    document.getElementById('menu-item-export')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.exportJSON();
+    });
+    document.getElementById('menu-item-import')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      document.getElementById('input-import-json')?.click();
+    });
+    document.getElementById('menu-item-delete')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.deleteActiveList();
+    });
+    document.getElementById('menu-item-lock')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.lockApp();
+      this.showToast('🔒 Tela bloqueada por segurança.');
+    });
+    document.getElementById('menu-item-logout')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      if (confirm('Deseja realmente sair da sua conta?')) {
+        this.logout();
+      }
+    });
+
+    // Seleção de lista ativa (Header principal)
     document.getElementById('select-active-list')?.addEventListener('change', (e) => {
       this.activeListId = e.target.value;
+      const sideSelect = document.getElementById('select-sidebar-list');
+      if (sideSelect) sideSelect.value = e.target.value;
       this.saveState();
       this.render();
     });
 
-    // Botão Nova Lista
+    // Seleção de lista ativa (Sidebar)
+    document.getElementById('select-sidebar-list')?.addEventListener('change', (e) => {
+      this.activeListId = e.target.value;
+      const mainSelect = document.getElementById('select-active-list');
+      if (mainSelect) mainSelect.value = e.target.value;
+      this.saveState();
+      this.render();
+      closeSidebar();
+    });
+
+    // Botões Nova Lista
     document.getElementById('btn-new-list')?.addEventListener('click', () => {
+      this.openModal('modal-new-list');
+    });
+    document.getElementById('btn-sidebar-new-list')?.addEventListener('click', () => {
+      closeSidebar();
       this.openModal('modal-new-list');
     });
 
@@ -622,19 +742,46 @@ class MercadoFacilApp {
       this.render();
     });
 
-    // Botão Excluir Lista
-    document.getElementById('btn-delete-list')?.addEventListener('click', () => {
-      const active = this.getActiveList();
-      if (this.lists.length <= 1) {
-        alert('Você deve ter pelo menos uma lista.');
-        return;
-      }
-      if (confirm(`Deseja realmente excluir a lista "${active.name}"?`)) {
-        this.lists = this.lists.filter(l => l.id !== active.id);
-        this.activeListId = this.lists[0].id;
-        this.saveState();
-        this.showToast('Lista removida.');
-        this.render();
+    // Botões Excluir Lista
+    document.getElementById('btn-delete-list')?.addEventListener('click', () => this.deleteActiveList());
+    document.getElementById('sidebar-btn-delete')?.addEventListener('click', () => {
+      closeSidebar();
+      this.deleteActiveList();
+    });
+
+    // Botões de Ferramentas da Sidebar
+    document.getElementById('sidebar-btn-whatsapp')?.addEventListener('click', () => {
+      closeSidebar();
+      this.shareWhatsApp();
+    });
+    document.getElementById('sidebar-btn-copy')?.addEventListener('click', () => {
+      closeSidebar();
+      this.copyListToClipboard();
+    });
+    document.getElementById('sidebar-btn-export')?.addEventListener('click', () => {
+      closeSidebar();
+      this.exportJSON();
+    });
+    document.getElementById('sidebar-btn-import')?.addEventListener('click', () => {
+      closeSidebar();
+      document.getElementById('input-import-json')?.click();
+    });
+    document.getElementById('sidebar-theme-toggle')?.addEventListener('click', () => {
+      this.toggleTheme();
+    });
+    document.getElementById('sidebar-btn-lock')?.addEventListener('click', () => {
+      closeSidebar();
+      this.lockApp();
+      this.showToast('🔒 Tela bloqueada por segurança.');
+    });
+    document.getElementById('sidebar-btn-login')?.addEventListener('click', () => {
+      closeSidebar();
+      document.getElementById('auth-modal')?.classList.add('active');
+    });
+    document.getElementById('sidebar-btn-logout')?.addEventListener('click', () => {
+      closeSidebar();
+      if (confirm('Deseja realmente sair da sua conta?')) {
+        this.logout();
       }
     });
 
@@ -660,11 +807,14 @@ class MercadoFacilApp {
       this.addProductFromForm();
     });
 
-    // Alternar Abas (Tabs)
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    // Alternar Abas (Tabs - Header, Sidebar e Bottom Navigation Mobile)
+    document.querySelectorAll('.tab-btn, .sidebar-nav-item, .bottom-nav-item').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const targetTab = e.currentTarget.getAttribute('data-tab');
-        this.switchTab(targetTab);
+        if (targetTab) {
+          this.switchTab(targetTab);
+          closeSidebar();
+        }
       });
     });
 
@@ -678,34 +828,9 @@ class MercadoFacilApp {
       });
     });
 
-    // Scroll spy para destacar botão da seção ativa durante rolagem no celular
-    window.addEventListener('scroll', () => {
-      if (window.innerWidth > 768) return;
-      const sections = ['tab-items', 'tab-shopping', 'tab-comparison', 'tab-reports'];
-      const scrollPosition = window.pageYOffset + 150;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const el = document.getElementById(sections[i]);
-        if (el && el.offsetTop <= scrollPosition) {
-          document.querySelectorAll('.tab-btn').forEach(btn => {
-            if (btn.getAttribute('data-tab') === sections[i]) {
-              btn.classList.add('active');
-            } else {
-              btn.classList.remove('active');
-            }
-          });
-          break;
-        }
-      }
-    }, { passive: true });
-
     // Re-renderizar gráficos e tabelas caso mude orientação ou redimensione tela
     window.addEventListener('resize', () => {
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile) {
-        this.renderStoreComparison();
-        this.renderCharts();
-      }
+      this.renderCharts();
     });
 
     // Botão Copiar Lista
@@ -760,12 +885,28 @@ class MercadoFacilApp {
     });
   }
 
-  // Alternar abas ou rolar suavemente no celular (Layout Vertical Único)
+  // Excluir lista ativa com confirmação
+  deleteActiveList() {
+    const active = this.getActiveList();
+    if (this.lists.length <= 1) {
+      alert('Você deve ter pelo menos uma lista.');
+      return;
+    }
+    if (confirm(`Deseja realmente excluir a lista "${active.name}"?`)) {
+      this.lists = this.lists.filter(l => l.id !== active.id);
+      this.activeListId = this.lists[0].id;
+      this.saveState();
+      this.showToast('Lista removida.');
+      this.render();
+    }
+  }
+
+  // Alternar abas responsivamente em qualquer dispositivo
   switchTab(tabId) {
     this.currentTab = tabId;
-    const isMobile = window.innerWidth <= 768;
 
-    document.querySelectorAll('.tab-btn').forEach(b => {
+    // Sincronizar classes ativas em todas as barras de navegação (topo, sidebar e bottom nav)
+    document.querySelectorAll('.tab-btn, .sidebar-nav-item, .bottom-nav-item').forEach(b => {
       if (b.getAttribute('data-tab') === tabId) {
         b.classList.add('active');
       } else {
@@ -773,29 +914,25 @@ class MercadoFacilApp {
       }
     });
 
-    if (isMobile) {
-      // No celular, todas as seções ficam visíveis na mesma página vertical
-      // Rolagem suave e precisa até a seção desejada
-      const targetEl = document.getElementById(tabId);
-      if (targetEl) {
-        const headerOffset = 100;
-        const elementPosition = targetEl.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    // Exibir apenas a aba ativa
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const activePanel = document.getElementById(tabId);
+    if (activePanel) {
+      activePanel.classList.add('active');
+    }
+
+    if (tabId === 'tab-comparison') this.renderStoreComparison();
+    if (tabId === 'tab-reports') this.renderCharts();
+
+    // Rolar suavemente para o início do conteúdo se estiver no mobile
+    if (window.innerWidth <= 768) {
+      const mainEl = document.querySelector('.main-content');
+      if (mainEl) {
         window.scrollTo({
-          top: Math.max(0, offsetPosition),
+          top: 0,
           behavior: 'smooth'
         });
       }
-      this.renderStoreComparison();
-      this.renderCharts();
-    } else {
-      // No Desktop, mantém o sistema de abas clássico
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      const activePanel = document.getElementById(tabId);
-      if (activePanel) activePanel.classList.add('active');
-
-      if (tabId === 'tab-comparison') this.renderStoreComparison();
-      if (tabId === 'tab-reports') this.renderCharts();
     }
   }
 
@@ -974,6 +1111,32 @@ class MercadoFacilApp {
       document.getElementById('metric-best-store').textContent = 'N/A';
       document.getElementById('metric-best-sub').textContent = 'Adicione itens à lista';
     }
+
+    // Atualizar badges de contagem de itens e carrinho
+    const totalCount = list.items.length;
+    const checkedCount = list.items.filter(i => i.checked).length;
+
+    ['badge-tab-items', 'badge-sidebar-items', 'badge-bottom-items'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = totalCount;
+        el.style.display = totalCount > 0 ? 'inline-block' : 'none';
+      }
+    });
+
+    ['badge-tab-cart', 'badge-sidebar-cart'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = `${checkedCount}/${totalCount}`;
+        el.style.display = totalCount > 0 ? 'inline-block' : 'none';
+      }
+    });
+
+    const bottomCart = document.getElementById('badge-bottom-cart');
+    if (bottomCart) {
+      bottomCart.textContent = checkedCount;
+      bottomCart.style.display = checkedCount > 0 ? 'inline-block' : 'none';
+    }
   }
 
   // Renderização da Lista de Itens por Categoria
@@ -1021,6 +1184,7 @@ class MercadoFacilApp {
               ${catItems.length} ${catItems.length === 1 ? 'item' : 'itens'} • <strong>${formatBRL(catSubtotal)}</strong>
             </div>
           </div>
+          <div class="items-table-wrapper">
           <table class="items-table">
             <thead>
               <tr>
@@ -1075,6 +1239,7 @@ class MercadoFacilApp {
               }).join('')}
             </tbody>
           </table>
+          </div>
         </div>
       `;
     });
@@ -1238,6 +1403,17 @@ class MercadoFacilApp {
 
     if (!canvasCategory || !canvasStores) return;
 
+    // Ajustar resolução dos canvas dinamicamente de acordo com o contêiner
+    const cardEl = canvasCategory.closest('.chart-card');
+    const containerW = cardEl ? cardEl.clientWidth - 30 : 380;
+    const targetW = Math.max(280, Math.min(containerW, 550));
+    const targetH = 220;
+
+    canvasCategory.width = targetW;
+    canvasCategory.height = targetH;
+    canvasStores.width = targetW;
+    canvasStores.height = targetH;
+
     // Chart 1: Distribuição por Categoria
     const ctxCat = canvasCategory.getContext('2d');
     ctxCat.clearRect(0, 0, canvasCategory.width, canvasCategory.height);
@@ -1254,14 +1430,16 @@ class MercadoFacilApp {
     if (grandTotal === 0) {
       ctxCat.fillStyle = this.theme === 'dark' ? '#94a3b8' : '#64748b';
       ctxCat.font = '14px Inter';
-      ctxCat.fillText('Nenhum dado para exibir', 80, 100);
+      ctxCat.textAlign = 'center';
+      ctxCat.fillText('Nenhum dado para exibir', targetW / 2, targetH / 2);
     } else {
       let startAngle = 0;
-      const centerX = 100;
-      const centerY = 100;
-      const radius = 70;
+      const isNarrow = targetW < 360;
+      const centerX = isNarrow ? 75 : Math.min(100, targetW * 0.28);
+      const centerY = 110;
+      const radius = isNarrow ? 55 : 70;
 
-      catKeys.forEach((key, idx) => {
+      catKeys.forEach((key) => {
         const val = categoryTotals[key];
         const sliceAngle = (val / grandTotal) * 2 * Math.PI;
         const color = (CATEGORIES[key] && CATEGORIES[key].color) || '#10b981';
@@ -1278,22 +1456,25 @@ class MercadoFacilApp {
 
       // Desenhar Rosca Central
       ctxCat.beginPath();
-      ctxCat.arc(centerX, centerY, 45, 0, 2 * Math.PI);
+      ctxCat.arc(centerX, centerY, radius * 0.6, 0, 2 * Math.PI);
       ctxCat.fillStyle = this.theme === 'dark' ? '#131b2e' : '#ffffff';
       ctxCat.fill();
 
       // Legendas ao lado
-      let legendY = 30;
-      catKeys.forEach(key => {
+      const legendX = centerX + radius + 15;
+      let legendY = 25;
+      ctxCat.textAlign = 'left';
+      catKeys.slice(0, 7).forEach(key => {
         const cat = CATEGORIES[key];
         const val = categoryTotals[key];
         ctxCat.fillStyle = cat ? cat.color : '#10b981';
-        ctxCat.fillRect(210, legendY, 12, 12);
+        ctxCat.fillRect(legendX, legendY, 10, 10);
 
         ctxCat.fillStyle = this.theme === 'dark' ? '#f8fafc' : '#0f172a';
-        ctxCat.font = '12px Inter';
-        ctxCat.fillText(`${cat ? cat.name : key}: R$ ${val.toFixed(2)}`, 230, legendY + 10);
-        legendY += 22;
+        ctxCat.font = '11px Inter';
+        const label = `${cat ? cat.name : key}: R$ ${val.toFixed(0)}`;
+        ctxCat.fillText(label, legendX + 15, legendY + 9);
+        legendY += 21;
       });
     }
 
@@ -1304,29 +1485,39 @@ class MercadoFacilApp {
     const storeRanking = OnlinePriceService.calculateStoreTotals(list.items);
     if (storeRanking.length > 0 && grandTotal > 0) {
       const maxVal = Math.max(...storeRanking.map(s => s.total)) * 1.15;
-      const barWidth = 45;
-      const startX = 30;
-      const chartHeight = 150;
+      const paddingX = 12;
+      const availableW = targetW - paddingX * 2;
+      const numStores = storeRanking.length;
+      const step = availableW / numStores;
+      const barWidth = Math.min(36, step * 0.72);
+      const chartHeight = 135;
+      const baseY = 175;
 
       storeRanking.forEach((store, i) => {
         const h = (store.total / maxVal) * chartHeight;
-        const x = startX + i * 75;
-        const y = 170 - h;
+        const x = paddingX + i * step + (step - barWidth) / 2;
+        const y = baseY - h;
 
         // Barra
         ctxStores.fillStyle = store.color;
-        ctxStores.fillRect(x, y, barWidth, h);
+        ctxStores.beginPath();
+        if (ctxStores.roundRect) {
+          ctxStores.roundRect(x, y, barWidth, h, [4, 4, 0, 0]);
+          ctxStores.fill();
+        } else {
+          ctxStores.fillRect(x, y, barWidth, h);
+        }
 
         // Preço no topo
         ctxStores.fillStyle = this.theme === 'dark' ? '#f8fafc' : '#0f172a';
-        ctxStores.font = '11px Outfit';
+        ctxStores.font = '10px Outfit';
         ctxStores.textAlign = 'center';
-        ctxStores.fillText(`R$${store.total.toFixed(0)}`, x + barWidth / 2, y - 5);
+        ctxStores.fillText(`R$${store.total.toFixed(0)}`, x + barWidth / 2, y - 4);
 
         // Nome Curto da Loja nos Gráficos (ABC, BH, Oliveira, União, Rena)
         const shortLabel = store.shortName || store.name;
-        ctxStores.font = 'bold 11px Inter';
-        ctxStores.fillText(shortLabel, x + barWidth / 2, 188);
+        ctxStores.font = 'bold 10px Inter';
+        ctxStores.fillText(shortLabel, x + barWidth / 2, baseY + 18);
       });
     }
   }
@@ -1594,15 +1785,18 @@ class MercadoFacilApp {
 
   // Renderização Geral da Aplicação
   render() {
-    // 1. Atualizar Select de Listas
-    const select = document.getElementById('select-active-list');
-    if (select) {
-      select.innerHTML = this.lists.map(l => `
-        <option value="${l.id}" ${l.id === this.activeListId ? 'selected' : ''}>
-          ${l.name} (${l.items.length} itens)
-        </option>
-      `).join('');
-    }
+    // 1. Atualizar Select de Listas (Topo e Sidebar)
+    const optionsHtml = this.lists.map(l => `
+      <option value="${l.id}" ${l.id === this.activeListId ? 'selected' : ''}>
+        ${l.name} (${l.items.length} itens)
+      </option>
+    `).join('');
+
+    const topSelect = document.getElementById('select-active-list');
+    if (topSelect) topSelect.innerHTML = optionsHtml;
+
+    const sideSelect = document.getElementById('select-sidebar-list');
+    if (sideSelect) sideSelect.innerHTML = optionsHtml;
 
     // 2. Preencher Select de Categorias no formulário
     const catSelect = document.getElementById('select-product-category');
@@ -1610,19 +1804,12 @@ class MercadoFacilApp {
       this.populateCategorySelect(catSelect);
     }
 
-    // 3. Renderizar seções
+    // 3. Renderizar seções e métricas
     this.renderDashboardMetrics();
     this.renderCategoryList();
     this.renderShoppingMode();
-    
-    // Se for celular (visualização vertical unificada) ou se a aba específica estiver ativa
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile || this.currentTab === 'tab-comparison') {
-      this.renderStoreComparison();
-    }
-    if (isMobile || this.currentTab === 'tab-reports') {
-      this.renderCharts();
-    }
+    this.renderStoreComparison();
+    this.renderCharts();
   }
 }
 

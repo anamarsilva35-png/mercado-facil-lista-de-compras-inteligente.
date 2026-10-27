@@ -10,6 +10,7 @@ Thumbs.db
 
 # Antigravity Scratch & Temporary files
 scratch/
+server.ps1
 
 # Vercel
 .vercel/

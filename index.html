@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>Mercado Fácil - Lista de Compras Inteligente & Preços On-line</title>
   <meta name="description" content="Sistema inteligente de listas de compras de supermercado com valores atualizados on-line em tempo real, comparador entre redes e modo de compras.">
   <!-- Favicon -->
@@ -25,89 +25,249 @@
 </head>
 <body>
 
-  <div class="app-container">
+  <div class="app-container app-layout">
     
-    <!-- Header Principal (Glassmorphism Navbar) -->
-    <header class="app-header">
-      <div class="brand-section">
-        <div class="brand-logo">
-          <i class="fa-solid fa-cart-shopping"></i>
+    <!-- Menu Lateral Responsivo (Sidebar no Desktop / Drawer Recolhível no Mobile/Tablet) -->
+    <aside id="app-sidebar" class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="brand-section">
+          <div class="brand-logo">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <div class="brand-info">
+            <h1>Mercado Fácil</h1>
+            <span class="brand-badge"><span class="pulse-dot"></span> On-line</span>
+          </div>
         </div>
-        <div class="brand-info">
-          <h1>Mercado Fácil</h1>
-        </div>
+        <button type="button" id="btn-close-sidebar" class="btn-close-sidebar" aria-label="Fechar menu lateral">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
 
-      <div class="header-actions">
-        <!-- Perfil do Usuário Logado -->
-        <div id="user-profile-chip" class="user-profile-chip" style="display:none;">
-          <div class="user-avatar-circle" id="user-avatar-initials">U</div>
-          <span id="user-display-name">Olá!</span>
-        </div>
-
-        <!-- Selector de Listas -->
-        <div class="list-selector-wrapper">
-          <select id="select-active-list" class="select-list" aria-label="Selecione a lista de compras"></select>
-          <button id="btn-new-list" class="btn btn-secondary" title="Nova Lista">
-            <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Nova Lista</span>
+      <!-- Seletor de Lista Ativa na Sidebar -->
+      <div class="sidebar-list-box">
+        <div class="sidebar-section-title">LISTA DE COMPRAS</div>
+        <div class="sidebar-list-row">
+          <select id="select-sidebar-list" class="select-list" aria-label="Selecione a lista de compras na barra lateral"></select>
+          <button type="button" id="btn-sidebar-new-list" class="btn btn-secondary btn-icon" title="Nova Lista">
+            <i class="fa-solid fa-plus"></i>
           </button>
         </div>
+      </div>
 
-        <button id="btn-sync-prices" class="btn btn-sync" title="Atualizar Cotações On-line">
-          <i class="fa-solid fa-arrows-rotate"></i> <span>Sincronizar Cotações</span>
+      <!-- Navegação Principal com Abas -->
+      <nav class="sidebar-nav" aria-label="Navegação do aplicativo">
+        <div class="sidebar-section-title">MENU PRINCIPAL</div>
+        <button type="button" class="sidebar-nav-item tab-btn active" data-tab="tab-items">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Minha Lista</span>
+          <span id="badge-sidebar-items" class="nav-badge" style="display:none;">0</span>
         </button>
-
-        <button id="btn-share-whatsapp" class="btn btn-icon" title="Enviar no WhatsApp" style="color:#25d366; border-color:rgba(37, 211, 102, 0.3);">
-          <i class="fa-brands fa-whatsapp"></i>
+        <button type="button" class="sidebar-nav-item tab-btn" data-tab="tab-shopping">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Modo Mercado</span>
+          <span id="badge-sidebar-cart" class="nav-badge cart" style="display:none;">0/0</span>
         </button>
+        <button type="button" class="sidebar-nav-item tab-btn" data-tab="tab-comparison">
+          <i class="fa-solid fa-shop"></i>
+          <span>Comparador de Redes</span>
+        </button>
+        <button type="button" class="sidebar-nav-item tab-btn" data-tab="tab-reports">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Gráficos & Relatórios</span>
+        </button>
+      </nav>
 
-        <button id="btn-copy-list" class="btn btn-icon" title="Copiar Lista para Área de Transferência">
+      <!-- Ferramentas Rápidas da Lista -->
+      <div class="sidebar-tools">
+        <div class="sidebar-section-title">FERRAMENTAS</div>
+        <button type="button" class="sidebar-tool-btn" id="sidebar-btn-whatsapp">
+          <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i>
+          <span>Enviar no WhatsApp</span>
+        </button>
+        <button type="button" class="sidebar-tool-btn" id="sidebar-btn-copy">
           <i class="fa-solid fa-copy"></i>
+          <span>Copiar Texto da Lista</span>
         </button>
-
-        <button id="btn-export-data" class="btn btn-icon" title="Exportar Backup JSON">
+        <button type="button" class="sidebar-tool-btn" id="sidebar-btn-export">
           <i class="fa-solid fa-download"></i>
+          <span>Exportar Backup (JSON)</span>
         </button>
-
-        <button id="btn-import-data" class="btn btn-icon" title="Importar Backup JSON">
+        <button type="button" class="sidebar-tool-btn" id="sidebar-btn-import">
           <i class="fa-solid fa-upload"></i>
+          <span>Importar Backup (JSON)</span>
         </button>
-        <input type="file" id="input-import-json" accept=".json" style="display:none;">
-
-        <button id="btn-delete-list" class="btn btn-icon" title="Excluir Lista Atual" style="color:var(--danger);">
+        <button type="button" class="sidebar-tool-btn danger" id="sidebar-btn-delete">
           <i class="fa-solid fa-trash"></i>
-        </button>
-
-        <button id="theme-toggle-btn" class="btn btn-icon" title="Alternar Tema Claro/Escuro">
-          <i class="fa-solid fa-sun"></i>
-        </button>
-
-        <!-- Botão Abrir Login (quando em modo visitante) -->
-        <button id="btn-open-login" class="btn btn-secondary" title="Fazer Login" style="display:inline-flex;">
-          <i class="fa-solid fa-user"></i> <span class="hide-mobile">Entrar</span>
-        </button>
-
-        <!-- Botão Bloquear Aplicativo (PIN/Biometria) -->
-        <button id="btn-lock-screen" class="btn btn-icon" title="Bloquear Tela / Exigir PIN" style="display:none; color:var(--text-muted);">
-          <i class="fa-solid fa-lock"></i>
-        </button>
-
-        <!-- Link/Botão Sair posicionado logo após as Configurações -->
-        <button id="btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
-          <i class="fa-solid fa-right-from-bracket"></i> <span>Sair</span>
+          <span>Excluir Lista Atual</span>
         </button>
       </div>
-    </header>
+
+      <!-- Rodapé da Sidebar: Perfil, Tema e Sessão -->
+      <div class="sidebar-footer">
+        <div id="sidebar-user-chip" class="user-profile-chip" style="display:none;">
+          <div class="user-avatar-circle" id="sidebar-avatar-initials">U</div>
+          <div class="sidebar-user-meta">
+            <span id="sidebar-user-name" class="sidebar-user-name">Usuário</span>
+            <span class="sidebar-user-sub">Sessão ativa</span>
+          </div>
+        </div>
+        <div class="sidebar-footer-actions">
+          <button type="button" id="sidebar-theme-toggle" class="btn btn-icon" title="Alternar Tema Claro/Escuro">
+            <i class="fa-solid fa-sun"></i>
+          </button>
+          <button type="button" id="sidebar-btn-lock" class="btn btn-icon" title="Bloquear Tela (PIN)" style="display:none; color:var(--text-muted);">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+          <button type="button" id="sidebar-btn-login" class="btn btn-secondary" title="Fazer Login" style="display:inline-flex;">
+            <i class="fa-solid fa-user"></i> <span>Entrar</span>
+          </button>
+          <button type="button" id="sidebar-btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Sair</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Fundo escuro (Backdrop) para fechar menu lateral no mobile/tablet -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <!-- Área de Conteúdo Principal -->
+    <main class="main-content">
+      
+      <!-- Top Bar / Header Principal -->
+      <header class="app-header">
+        <div class="header-left">
+          <!-- Botão Hamburger para abrir Menu Lateral em Mobile e Tablets -->
+          <button type="button" id="btn-toggle-sidebar" class="btn btn-icon sidebar-toggle-btn" aria-label="Abrir menu de navegação" title="Abrir Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+
+          <!-- Identidade Visual (Mobile / Tablet) -->
+          <div class="brand-section mobile-header-brand">
+            <div class="brand-logo">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <div class="brand-info">
+              <h1>Mercado Fácil</h1>
+              <span class="brand-badge"><span class="pulse-dot"></span> On-line</span>
+            </div>
+          </div>
+
+          <!-- Selector de Listas Topo -->
+          <div class="list-selector-wrapper">
+            <select id="select-active-list" class="select-list" aria-label="Selecione a lista de compras"></select>
+            <button id="btn-new-list" class="btn btn-secondary" title="Nova Lista">
+              <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Nova Lista</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Perfil do Usuário Logado -->
+          <div id="user-profile-chip" class="user-profile-chip" style="display:none;" title="Usuário Ativo">
+            <div class="user-avatar-circle" id="user-avatar-initials">U</div>
+            <span id="user-display-name">Olá!</span>
+          </div>
+
+          <!-- Botão Sincronizar Cotações -->
+          <button id="btn-sync-prices" class="btn btn-sync" title="Atualizar Cotações On-line">
+            <i class="fa-solid fa-arrows-rotate"></i> <span class="hide-mobile">Sincronizar</span>
+          </button>
+
+          <!-- Ações do Desktop (ocultas no mobile compacto) -->
+          <div class="desktop-actions-group">
+            <button id="btn-share-whatsapp" class="btn btn-icon" title="Enviar no WhatsApp" style="color:#25d366; border-color:rgba(37, 211, 102, 0.3);">
+              <i class="fa-brands fa-whatsapp"></i>
+            </button>
+
+            <button id="btn-copy-list" class="btn btn-icon" title="Copiar Lista para Área de Transferência">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+
+            <button id="btn-export-data" class="btn btn-icon" title="Exportar Backup JSON">
+              <i class="fa-solid fa-download"></i>
+            </button>
+
+            <button id="btn-import-data" class="btn btn-icon" title="Importar Backup JSON">
+              <i class="fa-solid fa-upload"></i>
+            </button>
+
+            <button id="btn-delete-list" class="btn btn-icon" title="Excluir Lista Atual" style="color:var(--danger);">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+
+            <!-- Botão Bloquear Aplicativo (PIN/Biometria) -->
+            <button id="btn-lock-screen" class="btn btn-icon" title="Bloquear Tela / Exigir PIN" style="display:none; color:var(--text-muted);">
+              <i class="fa-solid fa-lock"></i>
+            </button>
+
+            <!-- Link/Botão Sair posicionado -->
+            <button id="btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
+              <i class="fa-solid fa-right-from-bracket"></i> <span class="hide-mobile">Sair</span>
+            </button>
+          </div>
+
+          <input type="file" id="input-import-json" accept=".json" style="display:none;">
+
+          <!-- Botão Alternar Tema Claro/Escuro -->
+          <button id="theme-toggle-btn" class="btn btn-icon" title="Alternar Tema Claro/Escuro">
+            <i class="fa-solid fa-sun"></i>
+          </button>
+
+          <!-- Botão Abrir Login (quando em modo visitante) -->
+          <button id="btn-open-login" class="btn btn-secondary" title="Fazer Login" style="display:inline-flex;">
+            <i class="fa-solid fa-user"></i> <span class="hide-mobile">Entrar</span>
+          </button>
+
+          <!-- Botão Menu Mais Opções (Mobile e Acesso Rápido) -->
+          <div class="more-menu-container">
+            <button id="btn-more-options" class="btn btn-icon mobile-only" title="Mais Opções">
+              <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+
+            <!-- Dropdown flutuante de ações móveis -->
+            <div id="more-options-dropdown" class="more-options-dropdown">
+              <div class="dropdown-header">
+                <span>Ferramentas da Lista</span>
+                <button type="button" id="btn-close-dropdown" class="btn-close-dropdown"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <button type="button" class="dropdown-item" id="menu-item-whatsapp">
+                <i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> <span>Enviar no WhatsApp</span>
+              </button>
+              <button type="button" class="dropdown-item" id="menu-item-copy">
+                <i class="fa-solid fa-copy"></i> <span>Copiar Texto da Lista</span>
+              </button>
+              <button type="button" class="dropdown-item" id="menu-item-export">
+                <i class="fa-solid fa-download"></i> <span>Exportar Backup (JSON)</span>
+              </button>
+              <button type="button" class="dropdown-item" id="menu-item-import">
+                <i class="fa-solid fa-upload"></i> <span>Importar Backup (JSON)</span>
+              </button>
+              <div class="dropdown-divider"></div>
+              <button type="button" class="dropdown-item" id="menu-item-lock" style="display:none;">
+                <i class="fa-solid fa-lock"></i> <span>Bloquear Tela (PIN)</span>
+              </button>
+              <button type="button" class="dropdown-item danger" id="menu-item-delete">
+                <i class="fa-solid fa-trash"></i> <span>Excluir Lista Atual</span>
+              </button>
+              <button type="button" class="dropdown-item danger" id="menu-item-logout" style="display:none;">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Sair da Conta</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
     <!-- Banner Demonstrativo do Sistema -->
-    <div class="hero-promo-banner" style="margin: 0 auto 1.5rem auto; width:100%; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-color); max-height:180px; position:relative; box-shadow:var(--shadow-sm);">
-      <img src="assets/banner.jpg" alt="Mercado Fácil — Painel de Cotação de Preços" style="width:100%; height:180px; object-fit:cover; filter:brightness(0.75);">
-      <div style="position:absolute; top:0; bottom:0; left:0; right:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:1.25rem; color:white; text-shadow:0 2px 14px rgba(0,0,0,0.9); background:rgba(0, 0, 0, 0.3);">
-        <span style="background:var(--primary); padding:0.25rem 0.85rem; border-radius:var(--radius-full); font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:0.4rem; box-shadow:0 2px 8px rgba(16,185,129,0.4);">
-          <i class="fa-solid fa-bolt" style="margin-right:0.35rem;"></i> Monitoramento de Ofertas em Tempo Real
+    <div class="hero-promo-banner">
+      <img src="assets/banner.jpg" alt="Mercado Fácil — Painel de Cotação de Preços">
+      <div class="hero-content">
+        <span style="background:var(--primary); padding:0.25rem 0.75rem; border-radius:var(--radius-full); font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; display:inline-block; margin-bottom:0.35rem; box-shadow:0 2px 8px rgba(16,185,129,0.4);">
+          <i class="fa-solid fa-bolt" style="margin-right:0.35rem;"></i> Monitoramento de Ofertas On-line
         </span>
-        <h2 style="font-size:1.5rem; font-weight:800; line-height:1.2; margin-bottom:0.25rem;">Mercado Fácil — Cotações Atualizadas On-line</h2>
-        <p style="font-size:0.88rem; opacity:0.95; font-weight:500; max-width:750px;">Compare preços entre supermercados da sua região e encontre a maior economia para a sua lista de compras.</p>
+        <h2>Mercado Fácil — Cotações em Tempo Real</h2>
+        <p>Compare preços entre supermercados e encontre a maior economia para a sua lista.</p>
       </div>
     </div>
 
@@ -170,23 +330,23 @@
     <section class="add-product-panel">
       <form id="form-add-product" class="search-input-group">
         <div class="input-col-full" style="position:relative;">
-          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">NOME DO PRODUTO (BUSCA ON-LINE)</label>
+          <label class="form-label">NOME DO PRODUTO (BUSCA ON-LINE)</label>
           <input type="text" id="input-product-name" class="input-control" placeholder="Digite ex: Arroz, Leite, Picanha..." autocomplete="off" required>
           <div id="autocomplete-box" class="autocomplete-box"></div>
         </div>
 
         <div>
-          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">CATEGORIA</label>
+          <label class="form-label">CATEGORIA</label>
           <select id="select-product-category" class="input-control"></select>
         </div>
 
         <div>
-          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">QTD</label>
+          <label class="form-label">QTD</label>
           <input type="number" step="any" min="0.1" id="input-product-qty" class="input-control" value="1" placeholder="1" required>
         </div>
 
         <div>
-          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">UNIDADE</label>
+          <label class="form-label">UNIDADE</label>
           <select id="select-product-unit" class="input-control">
             <option value="un">un (Unidade)</option>
             <option value="kg">kg (Quilo)</option>
@@ -198,31 +358,37 @@
         </div>
 
         <div>
-          <label style="font-size:0.75rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.25rem;">PREÇO UN. (R$)</label>
+          <label class="form-label">PREÇO UN. (R$)</label>
           <input type="text" inputmode="decimal" id="input-product-price" class="input-control" placeholder="0,00">
         </div>
 
-        <div style="align-self:end;">
-          <button type="submit" class="btn btn-primary" style="height:39px; width:100%;">
+        <div class="form-submit-col" style="align-self:end;">
+          <button type="submit" class="btn btn-primary" style="min-height:42px; width:100%;">
             <i class="fa-solid fa-plus"></i> Adicionar
           </button>
         </div>
       </form>
     </section>
 
-    <!-- Navegação por Abas -->
-    <nav class="tab-navigation">
+    <!-- Navegação por Abas (Desktop & Tablets) -->
+    <nav class="tab-navigation desktop-tab-nav" aria-label="Navegação por abas">
       <button class="tab-btn active" data-tab="tab-items">
-        <i class="fa-solid fa-list-check"></i> Minha Lista
+        <i class="fa-solid fa-list-check"></i>
+        <span>Minha Lista</span>
+        <span id="badge-tab-items" class="tab-counter-badge" style="display:none;">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-shopping">
-        <i class="fa-solid fa-cart-shopping"></i> Modo Mercado
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>Modo Mercado</span>
+        <span id="badge-tab-cart" class="tab-counter-badge cart-badge" style="display:none;">0/0</span>
       </button>
       <button class="tab-btn" data-tab="tab-comparison">
-        <i class="fa-solid fa-shop"></i> Comparador de Redes
+        <i class="fa-solid fa-shop"></i>
+        <span>Comparador de Redes</span>
       </button>
       <button class="tab-btn" data-tab="tab-reports">
-        <i class="fa-solid fa-chart-pie"></i> Gráficos & Relatórios
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Gráficos & Relatórios</span>
       </button>
     </nav>
 
@@ -291,6 +457,7 @@
       </div>
     </section>
 
+    </main>
   </div>
 
   <!-- Modal: Nova Lista -->
@@ -550,6 +717,39 @@
       </form>
     </div>
   </div>
+
+  <!-- Backdrop para fechar dropdown mobile ao tocar fora -->
+  <div id="more-options-backdrop" class="dropdown-backdrop"></div>
+
+  <!-- Bottom Navigation Bar Fixa para Smartphones (Padrão de App Mobile) -->
+  <nav class="mobile-bottom-nav" aria-label="Navegação móvel inferior">
+    <button type="button" class="bottom-nav-item active" data-tab="tab-items">
+      <div class="bottom-nav-icon-wrapper">
+        <i class="fa-solid fa-list-check"></i>
+        <span id="badge-bottom-items" class="bottom-nav-badge" style="display:none;">0</span>
+      </div>
+      <span class="bottom-nav-label">Lista</span>
+    </button>
+    <button type="button" class="bottom-nav-item" data-tab="tab-shopping">
+      <div class="bottom-nav-icon-wrapper">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span id="badge-bottom-cart" class="bottom-nav-badge cart" style="display:none;">0</span>
+      </div>
+      <span class="bottom-nav-label">No Mercado</span>
+    </button>
+    <button type="button" class="bottom-nav-item" data-tab="tab-comparison">
+      <div class="bottom-nav-icon-wrapper">
+        <i class="fa-solid fa-shop"></i>
+      </div>
+      <span class="bottom-nav-label">Comparar</span>
+    </button>
+    <button type="button" class="bottom-nav-item" data-tab="tab-reports">
+      <div class="bottom-nav-icon-wrapper">
+        <i class="fa-solid fa-chart-pie"></i>
+      </div>
+      <span class="bottom-nav-label">Gráficos</span>
+    </button>
+  </nav>
 
   <!-- JavaScript Scripts -->
   <script src="mock-prices.js"></script>
