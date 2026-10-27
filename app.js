@@ -59,6 +59,7 @@ class MercadoFacilApp {
     this.users = [];
     this.currentUser = null;
     this.isLocked = true; // Exige confirmação/desbloqueio ao abrir o app
+    this.isExiting = false;
 
     this.init();
   }
@@ -500,8 +501,8 @@ class MercadoFacilApp {
     document.getElementById('btn-close-auth-modal')?.addEventListener('click', () => {
       const appContainer = document.querySelector('.app-container');
       if (!this.currentUser) {
-        // Em todos os dispositivos, exige login antes de acessar o aplicativo
-        this.showToast('ℹ️ Faça login ou crie sua conta para acessar o aplicativo.');
+        // Ao clicar para fechar na tela de login, pergunta se quer sair do aplicativo
+        this.promptExitApp();
       } else {
         document.getElementById('auth-modal')?.classList.remove('active');
         if (appContainer) appContainer.style.display = 'block';
@@ -582,7 +583,14 @@ class MercadoFacilApp {
 
     // Trocar de conta a partir do desbloqueio rápido
     document.getElementById('btn-quick-switch-account')?.addEventListener('click', () => {
-      this.logout();
+      if (confirm('Deseja realmente sair da conta atual?')) {
+        this.logout();
+      }
+    });
+
+    // Fechar aplicativo a partir do desbloqueio rápido
+    document.getElementById('btn-quick-exit-app')?.addEventListener('click', () => {
+      this.promptExitApp();
     });
 
     // Bloqueio de segurança automático ao minimizar o app no celular e reabrir (Page Visibility API)
@@ -607,6 +615,11 @@ class MercadoFacilApp {
       if (confirm('Deseja realmente sair da sua conta?')) {
         this.logout();
       }
+    });
+
+    // Botão Fechar Aplicativo (Header Desktop)
+    document.getElementById('btn-header-exit')?.addEventListener('click', () => {
+      this.promptExitApp();
     });
 
     // Fechar menu lateral (helper)
@@ -687,6 +700,11 @@ class MercadoFacilApp {
       if (confirm('Deseja realmente sair da sua conta?')) {
         this.logout();
       }
+    });
+    document.getElementById('menu-item-exit-app')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      this.promptExitApp();
     });
 
     // Seleção de lista ativa (Header principal)
@@ -783,6 +801,10 @@ class MercadoFacilApp {
       if (confirm('Deseja realmente sair da sua conta?')) {
         this.logout();
       }
+    });
+    document.getElementById('sidebar-btn-exit')?.addEventListener('click', () => {
+      closeSidebar();
+      this.promptExitApp();
     });
 
     // Botão Sincronizar Preços On-line
@@ -882,6 +904,25 @@ class MercadoFacilApp {
         const modal = e.target.closest('.modal-overlay');
         if (modal) this.closeModal(modal.id);
       });
+    });
+
+    // Ações do Modal de Confirmação de Saída
+    document.getElementById('btn-confirm-exit')?.addEventListener('click', () => {
+      this.executeExit();
+    });
+    document.getElementById('btn-reopen-app')?.addEventListener('click', () => {
+      const exitScreen = document.getElementById('app-exit-screen');
+      if (exitScreen) exitScreen.style.display = 'none';
+      this.isExiting = false;
+    });
+
+    // Interceptar fechamento da janela/aba do navegador ou navegação
+    window.addEventListener('beforeunload', (e) => {
+      if (this.isExiting) return;
+      // Solicita confirmação nativa do navegador ao fechar aba/janela ou recarregar
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
     });
   }
 
@@ -1597,6 +1638,33 @@ class MercadoFacilApp {
   closeModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.remove('active');
+  }
+
+  // Pergunta se o usuário quer sair ao clicar para fechar o aplicativo
+  promptExitApp() {
+    this.openModal('modal-confirm-exit');
+  }
+
+  // Executa o fechamento seguro após confirmação do usuário
+  executeExit() {
+    this.isExiting = true;
+    this.closeModal('modal-confirm-exit');
+    this.saveState();
+
+    // Tenta fechar a janela / aba / PWA se permitido
+    try {
+      window.close();
+    } catch (e) {
+      console.log('window.close restrito pelo navegador');
+    }
+
+    // Exibe tela elegante de encerramento caso o navegador impeça o fechamento direto da aba
+    setTimeout(() => {
+      const exitScreen = document.getElementById('app-exit-screen');
+      if (exitScreen) {
+        exitScreen.style.display = 'flex';
+      }
+    }, 150);
   }
 
   // Toast System

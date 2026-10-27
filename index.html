@@ -125,6 +125,9 @@
           <button type="button" id="sidebar-btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
             <i class="fa-solid fa-right-from-bracket"></i> <span>Sair</span>
           </button>
+          <button type="button" id="sidebar-btn-exit" class="btn btn-secondary" title="Fechar o Aplicativo" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
+            <i class="fa-solid fa-power-off"></i> <span>Fechar</span>
+          </button>
         </div>
       </div>
     </aside>
@@ -206,6 +209,11 @@
             <button id="btn-logout" class="btn btn-secondary" title="Sair da Conta" style="display:none; color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
               <i class="fa-solid fa-right-from-bracket"></i> <span class="hide-mobile">Sair</span>
             </button>
+
+            <!-- Botão Fechar o Aplicativo -->
+            <button id="btn-header-exit" class="btn btn-secondary" title="Fechar o Aplicativo" style="color:var(--danger); border-color:rgba(239, 68, 68, 0.3);">
+              <i class="fa-solid fa-power-off"></i> <span class="hide-mobile">Fechar</span>
+            </button>
           </div>
 
           <input type="file" id="input-import-json" accept=".json" style="display:none;">
@@ -253,6 +261,9 @@
               </button>
               <button type="button" class="dropdown-item danger" id="menu-item-logout" style="display:none;">
                 <i class="fa-solid fa-right-from-bracket"></i> <span>Sair da Conta</span>
+              </button>
+              <button type="button" class="dropdown-item danger" id="menu-item-exit-app">
+                <i class="fa-solid fa-power-off"></i> <span>Fechar o Aplicativo</span>
               </button>
             </div>
           </div>
@@ -709,9 +720,12 @@
           <i class="fa-solid fa-fingerprint" style="color:#6366f1; font-size:1.2rem;"></i> Usar Biometria / Digital
         </button>
 
-        <div style="margin-top:1.25rem; text-align:center;">
+        <div style="margin-top:1.25rem; display:flex; justify-content:center; align-items:center; gap:1.25rem; flex-wrap:wrap;">
           <button type="button" id="btn-quick-switch-account" style="background:none; border:none; color:var(--text-muted); font-size:0.85rem; cursor:pointer; text-decoration:underline;">
-            Entrar com outra conta ou sair
+            Entrar com outra conta ou deslogar
+          </button>
+          <button type="button" id="btn-quick-exit-app" style="background:none; border:none; color:var(--danger); font-size:0.85rem; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:0.4rem;">
+            <i class="fa-solid fa-power-off"></i> Fechar Aplicativo
           </button>
         </div>
       </form>
@@ -750,6 +764,50 @@
       <span class="bottom-nav-label">Gráficos</span>
     </button>
   </nav>
+
+  <!-- Modal: Confirmar Fechamento do Aplicativo -->
+  <div id="modal-confirm-exit" class="modal-overlay">
+    <div class="modal-content modal-exit-dialog">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:0.5rem; color:var(--danger); font-size:1.15rem; font-weight:700;">
+          <i class="fa-solid fa-power-off"></i> Fechar Aplicativo
+        </h3>
+        <button type="button" class="modal-close" id="btn-close-exit-modal" aria-label="Fechar modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="exit-dialog-body" style="padding:0.75rem 0.25rem;">
+        <div class="exit-dialog-icon">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </div>
+        <h4 style="font-size:1.2rem; font-weight:700; margin-bottom:0.6rem; color:var(--text-main);">Deseja realmente sair?</h4>
+        <p style="color:var(--text-muted); font-size:0.92rem; line-height:1.55; margin-bottom:0.25rem;">
+          Todas as suas listas e cotações de preços estão salvas com segurança no seu dispositivo.
+        </p>
+      </div>
+      <div style="display:flex; justify-content:center; gap:0.75rem; margin-top:1.25rem;">
+        <button type="button" class="btn btn-secondary btn-modal-cancel" id="btn-cancel-exit" style="flex:1; justify-content:center; font-weight:600;">
+          <i class="fa-solid fa-arrow-left"></i> Continuar no App
+        </button>
+        <button type="button" class="btn" id="btn-confirm-exit" style="flex:1; justify-content:center; font-weight:700; background:var(--danger); color:#ffffff; border:none; box-shadow:0 4px 14px rgba(239, 68, 68, 0.4);">
+          <i class="fa-solid fa-power-off"></i> Sim, Sair
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Encerramento (Caso o navegador bloqueie window.close) -->
+  <div id="app-exit-screen" class="exit-screen-overlay" style="display:none;">
+    <div class="exit-screen-card">
+      <div class="exit-screen-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2>Aplicativo Fechado</h2>
+      <p>Todas as suas listas e informações foram salvas com segurança no seu aparelho.</p>
+      <p class="exit-tip">Você já pode fechar esta aba do navegador agora.</p>
+      <button type="button" id="btn-reopen-app" class="btn btn-primary" style="margin-top:1.5rem; width:100%; justify-content:center; font-weight:700;">
+        <i class="fa-solid fa-arrow-rotate-left"></i> Reabrir Aplicativo
+      </button>
+    </div>
+  </div>
 
   <!-- JavaScript Scripts -->
   <script src="mock-prices.js"></script>
