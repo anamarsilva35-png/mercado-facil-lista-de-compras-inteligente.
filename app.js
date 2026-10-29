@@ -58,7 +58,7 @@ class MercadoFacilApp {
     this.shoppingFilter = 'all';
     this.users = [];
     this.currentUser = null;
-    this.isLocked = true; // Exige confirmação/desbloqueio ao abrir o app
+    this.isLocked = false; // Só bloqueia se o usuário ativar o bloqueio de tela manualmente
     this.isExiting = false;
 
     this.init();
@@ -96,15 +96,14 @@ class MercadoFacilApp {
     if (savedCurrentUser) {
       try {
         this.currentUser = JSON.parse(savedCurrentUser);
-        // Se a sessão já foi desbloqueada nesta aba, mantém desbloqueada; se for nova abertura, exige PIN/biometria
-        const isUnlockedInSession = sessionStorage.getItem('mf_is_unlocked');
-        this.isLocked = isUnlockedInSession !== 'true';
+        // Só mantém bloqueado se o usuário tiver bloqueado manualmente a tela
+        this.isLocked = localStorage.getItem('mf_app_locked') === 'true';
       } catch (e) {
         this.currentUser = null;
-        this.isLocked = true;
+        this.isLocked = false;
       }
     } else {
-      this.isLocked = true;
+      this.isLocked = false;
     }
 
     const savedLists = localStorage.getItem('ms_lists');
@@ -199,8 +198,10 @@ class MercadoFacilApp {
       if (openLoginBtn) openLoginBtn.style.display = 'none';
       if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'none';
 
+      const menuLogin = document.getElementById('menu-item-login');
       const menuLock = document.getElementById('menu-item-lock');
       const menuLogout = document.getElementById('menu-item-logout');
+      if (menuLogin) menuLogin.style.display = 'none';
       if (menuLock) menuLock.style.display = 'flex';
       if (menuLogout) menuLogout.style.display = 'flex';
       
@@ -213,12 +214,12 @@ class MercadoFacilApp {
       if (userAvatarEl) userAvatarEl.textContent = initials;
       if (sidebarAvatarEl) sidebarAvatarEl.textContent = initials;
     } else {
-      // Nenhum usuário logado: Exibir modal de Login
+      // Nenhum usuário logado: Navegação livre na tela inicial (modal de login só abre ao clicar em "Entrar")
       if (quickUnlockModal) quickUnlockModal.classList.remove('active');
-      if (authModal) authModal.classList.add('active');
+      if (authModal) authModal.classList.remove('active');
       
       if (appContainer) {
-        appContainer.style.display = 'none';
+        appContainer.style.display = '';
       }
 
       if (userChip) userChip.style.display = 'none';
@@ -230,8 +231,10 @@ class MercadoFacilApp {
       if (openLoginBtn) openLoginBtn.style.display = 'inline-flex';
       if (sidebarLoginBtn) sidebarLoginBtn.style.display = 'inline-flex';
 
+      const menuLogin = document.getElementById('menu-item-login');
       const menuLock = document.getElementById('menu-item-lock');
       const menuLogout = document.getElementById('menu-item-logout');
+      if (menuLogin) menuLogin.style.display = 'flex';
       if (menuLock) menuLock.style.display = 'none';
       if (menuLogout) menuLogout.style.display = 'none';
     }
@@ -247,6 +250,7 @@ class MercadoFacilApp {
     const validPass = userRecord ? userRecord.password : '123456';
     if (pass === validPass || pass === '1234' || (this.currentUser.username === 'google_user')) {
       this.isLocked = false;
+      localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.setupAuth();
       this.showToast(`🔓 Acesso liberado! Bem-vindo(a), ${this.currentUser.name}!`);
@@ -279,6 +283,7 @@ class MercadoFacilApp {
           // Se autenticou via hardware/biometria ou se completou
           if (credential) {
             this.isLocked = false;
+            localStorage.removeItem('mf_app_locked');
             sessionStorage.setItem('mf_is_unlocked', 'true');
             this.setupAuth();
             this.showToast('✨ Biometria verificada com sucesso!');
@@ -293,6 +298,7 @@ class MercadoFacilApp {
     // Fallback amigável de confirmação biométrica
     if (confirm(`🔐 Deseja desbloquear com a biometria/digital cadastrada no celular para "${this.currentUser.name}"?`)) {
       this.isLocked = false;
+      localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.setupAuth();
       this.showToast('✨ Biometria confirmada!');
@@ -302,6 +308,7 @@ class MercadoFacilApp {
   lockApp() {
     if (this.currentUser) {
       this.isLocked = true;
+      localStorage.setItem('mf_app_locked', 'true');
       sessionStorage.removeItem('mf_is_unlocked');
       this.setupAuth();
     }
@@ -315,6 +322,7 @@ class MercadoFacilApp {
     if (foundUser) {
       this.currentUser = { username: foundUser.username, name: foundUser.name };
       this.isLocked = false;
+      localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
@@ -346,6 +354,7 @@ class MercadoFacilApp {
     this.users.push(newUser);
     this.currentUser = { username: newUser.username, name: newUser.name };
     this.isLocked = false;
+    localStorage.removeItem('mf_app_locked');
     sessionStorage.setItem('mf_is_unlocked', 'true');
     this.saveState();
     this.setupAuth();
@@ -356,7 +365,8 @@ class MercadoFacilApp {
 
   logout() {
     this.currentUser = null;
-    this.isLocked = true;
+    this.isLocked = false;
+    localStorage.removeItem('mf_app_locked');
     sessionStorage.removeItem('mf_is_unlocked');
     this.saveState();
     this.setupAuth();
@@ -391,6 +401,7 @@ class MercadoFacilApp {
 
       this.currentUser = { username: payload.u, name: payload.n };
       this.isLocked = false;
+      localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
@@ -404,12 +415,13 @@ class MercadoFacilApp {
   }
 
   setupTheme() {
+    const iconHtml = this.theme === 'dark'
+      ? '<i class="fa-solid fa-sun"></i>'
+      : '<i class="fa-solid fa-moon"></i>';
     const themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-      themeBtn.innerHTML = this.theme === 'dark' 
-        ? '<i class="fa-solid fa-sun"></i>' 
-        : '<i class="fa-solid fa-moon"></i>';
-    }
+    const sidebarThemeBtn = document.getElementById('sidebar-theme-toggle');
+    if (themeBtn) themeBtn.innerHTML = iconHtml;
+    if (sidebarThemeBtn) sidebarThemeBtn.innerHTML = iconHtml;
   }
 
   toggleTheme() {
@@ -430,19 +442,27 @@ class MercadoFacilApp {
     // Alternador de tema
     document.getElementById('theme-toggle-btn')?.addEventListener('click', () => this.toggleTheme());
 
-    // Eventos de Autenticação (Login / Cadastro)
+    // Eventos de Autenticação (Login / Cadastro / Outro Dispositivo)
     document.getElementById('tab-auth-login')?.addEventListener('click', () => {
-      document.getElementById('tab-auth-login').classList.add('active');
-      document.getElementById('tab-auth-register').classList.remove('active');
+      ['tab-auth-login', 'tab-auth-register', 'tab-auth-transfer'].forEach(id =>
+        document.getElementById(id)?.classList.remove('active')
+      );
+      document.getElementById('tab-auth-login')?.classList.add('active');
       document.getElementById('form-auth-login').style.display = 'block';
       document.getElementById('form-auth-register').style.display = 'none';
+      const transferForm = document.getElementById('form-auth-transfer');
+      if (transferForm) transferForm.style.display = 'none';
     });
 
     document.getElementById('tab-auth-register')?.addEventListener('click', () => {
-      document.getElementById('tab-auth-register').classList.add('active');
-      document.getElementById('tab-auth-login').classList.remove('active');
+      ['tab-auth-login', 'tab-auth-register', 'tab-auth-transfer'].forEach(id =>
+        document.getElementById(id)?.classList.remove('active')
+      );
+      document.getElementById('tab-auth-register')?.classList.add('active');
       document.getElementById('form-auth-register').style.display = 'block';
       document.getElementById('form-auth-login').style.display = 'none';
+      const transferForm = document.getElementById('form-auth-transfer');
+      if (transferForm) transferForm.style.display = 'none';
     });
 
     // Submissão do Login
@@ -486,6 +506,9 @@ class MercadoFacilApp {
 
     document.getElementById('btn-fill-google-user')?.addEventListener('click', () => {
       this.currentUser = { username: 'google_user', name: 'Ana Maria Silva (Google)' };
+      this.isLocked = false;
+      localStorage.removeItem('mf_app_locked');
+      sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
       this.showToast('🌐 Autenticado com sucesso via Conta Google!');
@@ -497,21 +520,26 @@ class MercadoFacilApp {
       document.getElementById('auth-modal')?.classList.add('active');
     });
 
-    // Fechar Modal de Login
-    document.getElementById('btn-close-auth-modal')?.addEventListener('click', () => {
+    // Fechar Modal de Login e continuar navegando normalmente
+    const closeAuthModal = () => {
+      document.getElementById('auth-modal')?.classList.remove('active');
       const appContainer = document.querySelector('.app-container');
-      if (!this.currentUser) {
-        // Ao clicar para fechar na tela de login, pergunta se quer sair do aplicativo
-        this.promptExitApp();
-      } else {
-        document.getElementById('auth-modal')?.classList.remove('active');
-        if (appContainer) appContainer.style.display = 'block';
+      if (appContainer) appContainer.style.display = '';
+    };
+
+    document.getElementById('btn-close-auth-modal')?.addEventListener('click', closeAuthModal);
+
+    // Fechar ao clicar fora do card no overlay de login
+    document.getElementById('auth-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'auth-modal') {
+        closeAuthModal();
       }
     });
 
-    // Continuar como Visitante sem login (exige autenticação em todos os dispositivos)
+    // Continuar como Visitante sem login
     document.getElementById('btn-continue-guest')?.addEventListener('click', () => {
-      this.showToast('ℹ️ Faça login ou crie sua conta para acessar o aplicativo.');
+      closeAuthModal();
+      this.showToast('👋 Navegando no Modo Visitante.');
     });
     // Gerar código de transferência
     document.getElementById('btn-generate-transfer-code')?.addEventListener('click', () => {
@@ -593,12 +621,11 @@ class MercadoFacilApp {
       this.promptExitApp();
     });
 
-    // Bloqueio de segurança automático ao minimizar o app no celular e reabrir (Page Visibility API)
+    // Mantém bloqueado apenas se o usuário tiver ativado o bloqueio manual
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && this.currentUser) {
-        // Quando o usuário volta ao navegador ou PWA no celular
-        const isUnlocked = sessionStorage.getItem('mf_is_unlocked');
-        if (!isUnlocked) {
+        const isManuallyLocked = localStorage.getItem('mf_app_locked') === 'true';
+        if (isManuallyLocked) {
           this.lockApp();
         }
       }
@@ -687,6 +714,11 @@ class MercadoFacilApp {
       dropdown?.classList.remove('active');
       dropdownBackdrop?.classList.remove('active');
       this.deleteActiveList();
+    });
+    document.getElementById('menu-item-login')?.addEventListener('click', () => {
+      dropdown?.classList.remove('active');
+      dropdownBackdrop?.classList.remove('active');
+      document.getElementById('auth-modal')?.classList.add('active');
     });
     document.getElementById('menu-item-lock')?.addEventListener('click', () => {
       dropdown?.classList.remove('active');
@@ -915,15 +947,6 @@ class MercadoFacilApp {
       if (exitScreen) exitScreen.style.display = 'none';
       this.isExiting = false;
     });
-
-    // Interceptar fechamento da janela/aba do navegador ou navegação
-    window.addEventListener('beforeunload', (e) => {
-      if (this.isExiting) return;
-      // Solicita confirmação nativa do navegador ao fechar aba/janela ou recarregar
-      e.preventDefault();
-      e.returnValue = '';
-      return '';
-    });
   }
 
   // Excluir lista ativa com confirmação
@@ -1033,11 +1056,13 @@ class MercadoFacilApp {
         const prod = PRODUCT_CATALOG.find(p => p.id === pId);
         
         if (prod) {
+          const priceVal = bestPrice ? bestPrice : prod.basePrice;
           document.getElementById('input-product-name').value = prod.name;
-          document.getElementById('input-product-price').value = bestPrice ? bestPrice.toFixed(2) : prod.basePrice.toFixed(2);
+          document.getElementById('input-product-price').value = priceVal.toFixed(2).replace('.', ',');
           document.getElementById('select-product-category').value = prod.category;
           document.getElementById('select-product-unit').value = prod.unit;
-          this.showToast(`💡 Sugerido o menor preço: ${formatBRL(bestPrice)} (${CATEGORIES[bestStore]?.name || 'Oferta'})`);
+          const storeObj = SUPERMARKETS.find(s => s.id === bestStore);
+          this.showToast(`💡 Sugerido o menor preço: ${formatBRL(priceVal)} (${storeObj?.shortName || CATEGORIES[bestStore]?.name || 'Oferta'})`);
         }
         box.classList.remove('visible');
       });
