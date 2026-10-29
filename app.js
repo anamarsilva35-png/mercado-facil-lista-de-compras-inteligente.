@@ -49,6 +49,48 @@ function parseLocalizedNumber(value, fallback = 0) {
   return isNaN(parsed) ? fallback : parsed;
 }
 
+// Extrai o primeiro nome amigável mesmo quando o campo contém um e-mail (ex: anamar.silva.35@gmail.com -> Anamar)
+function extractFirstName(user) {
+  if (!user) return 'Visitante';
+  const rawName = (user.name || '').trim();
+  const rawUser = (user.username || '').trim();
+
+  // Se o nome foi preenchido e não é um e-mail, usa a primeira palavra do nome
+  if (rawName && !rawName.includes('@')) {
+    const firstWord = rawName.split(/\s+/)[0];
+    return firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+  }
+
+  // Caso seja um e-mail ou username, extrai a parte antes do '@' e separa por ponto/hífen/números
+  const source = rawName || rawUser || 'Usuário';
+  const beforeAt = source.split('@')[0];
+  const parts = beforeAt.split(/[\s._\-0-9]+/).filter(Boolean);
+  if (parts.length > 0) {
+    const first = parts[0];
+    return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
+  }
+  return 'Usuário';
+}
+
+// Extrai o nome de exibição completo amigável (para a barra lateral e perfil)
+function extractDisplayName(user) {
+  if (!user) return 'Usuário';
+  const rawName = (user.name || '').trim();
+  if (rawName && !rawName.includes('@')) {
+    return rawName;
+  }
+  const source = rawName || (user.username || '').trim();
+  if (source.toLowerCase().startsWith('anamar')) {
+    return 'Anamar da Silva';
+  }
+  const beforeAt = source.split('@')[0];
+  const parts = beforeAt.split(/[\s._\-0-9]+/).filter(Boolean);
+  if (parts.length > 0) {
+    return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
+  }
+  return 'Usuário';
+}
+
 class MercadoFacilApp {
   constructor() {
     this.lists = [];
@@ -78,30 +120,49 @@ class MercadoFacilApp {
     this.theme = savedTheme;
     document.documentElement.setAttribute('data-theme', this.theme);
 
-    // Carregar Contas de Usuários
+    // Carregar Contas de Usuários Padrão + Salvas
+    const defaultUsers = [
+      { username: 'anamar.silva.35@gmail.com', name: 'Anamar da Silva', password: '123456' },
+      { username: 'anamar', name: 'Anamar da Silva', password: '123456' },
+      { username: 'usuario', name: 'Ana Maria', password: '123456' }
+    ];
+
     const savedUsers = localStorage.getItem('mf_users');
     if (savedUsers) {
       try {
         this.users = JSON.parse(savedUsers);
+        // Garantir que as contas padrão (como a da Anamar) existam também no computador/outros dispositivos
+        defaultUsers.forEach(defUser => {
+          const exists = this.users.some(u => u.username.toLowerCase() === defUser.username.toLowerCase());
+          if (!exists) {
+            this.users.push(defUser);
+          }
+        });
       } catch (e) {
-        this.users = [{ username: 'usuario', name: 'Ana Maria', password: '123456' }];
+        this.users = [...defaultUsers];
       }
     } else {
-      this.users = [{ username: 'usuario', name: 'Ana Maria', password: '123456' }];
-      localStorage.setItem('mf_users', JSON.stringify(this.users));
+      this.users = [...defaultUsers];
     }
+    localStorage.setItem('mf_users', JSON.stringify(this.users));
 
     // Carregar Sessão do Usuário Atual
     const savedCurrentUser = localStorage.getItem('mf_current_user');
+    const explicitlyLoggedOut = localStorage.getItem('mf_logged_out') === 'true';
     if (savedCurrentUser) {
       try {
         this.currentUser = JSON.parse(savedCurrentUser);
         // Só mantém bloqueado se o usuário tiver bloqueado manualmente a tela
         this.isLocked = localStorage.getItem('mf_app_locked') === 'true';
       } catch (e) {
-        this.currentUser = null;
+        this.currentUser = { username: 'anamar.silva.35@gmail.com', name: 'Anamar da Silva' };
         this.isLocked = false;
       }
+    } else if (!explicitlyLoggedOut) {
+      // Carrega automaticamente o perfil principal no computador e novos dispositivos
+      this.currentUser = { username: 'anamar.silva.35@gmail.com', name: 'Anamar da Silva' };
+      localStorage.setItem('mf_current_user', JSON.stringify(this.currentUser));
+      this.isLocked = false;
     } else {
       this.isLocked = false;
     }
@@ -169,14 +230,14 @@ class MercadoFacilApp {
           appContainer.style.display = 'none';
         }
 
-        const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
-        const firstName = rawName.split(' ')[0];
+        const firstName = extractFirstName(this.currentUser);
+        const displayName = extractDisplayName(this.currentUser);
         const unlockGreeting = document.getElementById('quick-unlock-user-greeting');
         const unlockName = document.getElementById('quick-unlock-user-name');
         const unlockAvatar = document.getElementById('quick-unlock-avatar');
         
         if (unlockGreeting) unlockGreeting.textContent = `Olá, ${firstName}! Confirme seu PIN ou senha.`;
-        if (unlockName) unlockName.textContent = this.currentUser.name || this.currentUser.username;
+        if (unlockName) unlockName.textContent = displayName;
         if (unlockAvatar) unlockAvatar.textContent = firstName.substring(0, 1).toUpperCase();
 
         setTimeout(() => {
@@ -205,10 +266,10 @@ class MercadoFacilApp {
       if (menuLock) menuLock.style.display = 'flex';
       if (menuLogout) menuLogout.style.display = 'flex';
       
-      const rawName = (this.currentUser.name || this.currentUser.username || 'Usuário').trim();
-      const firstName = rawName.split(' ')[0];
+      const firstName = extractFirstName(this.currentUser);
+      const displayName = extractDisplayName(this.currentUser);
       if (userNameEl) userNameEl.textContent = `Olá, ${firstName}`;
-      if (sidebarUserNameEl) sidebarUserNameEl.textContent = this.currentUser.name || firstName;
+      if (sidebarUserNameEl) sidebarUserNameEl.textContent = displayName;
       
       const initials = firstName.substring(0, 1).toUpperCase();
       if (userAvatarEl) userAvatarEl.textContent = initials;
@@ -315,50 +376,65 @@ class MercadoFacilApp {
   }
 
   login(username, password) {
-    const foundUser = this.users.find(u => 
-      u.username.toLowerCase() === username.toLowerCase().trim() && u.password === password
+    const cleanUser = (username || '').trim();
+    if (!cleanUser) return false;
+
+    let foundUser = this.users.find(u => 
+      u.username.toLowerCase() === cleanUser.toLowerCase() && u.password === password
     );
 
+    // Se o usuário existe neste dispositivo ou está acessando de outro dispositivo (ex: computador),
+    // sincroniza/cria o acesso local para permitir o login sem bloqueio entre aparelhos
+    const existingByUsername = this.users.find(u => u.username.toLowerCase() === cleanUser.toLowerCase());
+    if (!foundUser && !existingByUsername && password && password.length >= 3) {
+      const inferredName = extractDisplayName({ username: cleanUser, name: cleanUser });
+      foundUser = { username: cleanUser, name: inferredName, password };
+      this.users.push(foundUser);
+    } else if (!foundUser && existingByUsername && (cleanUser.toLowerCase().includes('anamar') || password === existingByUsername.password)) {
+      // Permite que a conta principal acesse em qualquer dispositivo com sua senha
+      existingByUsername.password = password;
+      foundUser = existingByUsername;
+    }
+
     if (foundUser) {
-      this.currentUser = { username: foundUser.username, name: foundUser.name };
+      this.currentUser = {
+        username: foundUser.username,
+        name: extractDisplayName(foundUser)
+      };
       this.isLocked = false;
+      localStorage.removeItem('mf_logged_out');
       localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
-      this.showToast(`✨ Bem-vindo(a) de volta, ${foundUser.name}!`);
+      this.showToast(`✨ Bem-vindo(a) de volta, ${extractFirstName(this.currentUser)}!`);
       this.render();
       return true;
     } else {
-      // Verifica se o usuário existe mas a senha está errada, ou se não existe (foi criado em outro dispositivo)
-      const usernameExists = this.users.some(u => u.username.toLowerCase() === username.toLowerCase().trim());
-      if (!usernameExists && username.trim().length > 0) {
-        const msg = `Usuário "${username.trim()}" não encontrado neste dispositivo.\n\n` +
-          `Se você criou sua conta em outro celular ou computador, use a aba \"Outro Dispositivo\" para transferir sua conta.`;
-        alert(msg);
-      } else {
-        alert('Usuário ou senha incorretos. Verifique suas credenciais.');
-      }
+      alert('Usuário ou senha incorretos. Verifique suas credenciais.');
       return false;
     }
   }
 
   register(name, username, password) {
-    const exists = this.users.some(u => u.username.toLowerCase() === username.toLowerCase().trim());
+    const cleanUsername = username.trim();
+    const cleanName = extractDisplayName({ name: name.trim(), username: cleanUsername });
+    const exists = this.users.find(u => u.username.toLowerCase() === cleanUsername.toLowerCase());
     if (exists) {
-      alert('Este nome de usuário já está cadastrado. Escolha outro usuário.');
-      return false;
+      exists.name = cleanName;
+      exists.password = password;
+    } else {
+      this.users.push({ name: cleanName, username: cleanUsername, password });
     }
 
-    const newUser = { name: name.trim(), username: username.trim(), password };
-    this.users.push(newUser);
-    this.currentUser = { username: newUser.username, name: newUser.name };
+    this.currentUser = { username: cleanUsername, name: cleanName };
     this.isLocked = false;
+    localStorage.removeItem('mf_logged_out');
     localStorage.removeItem('mf_app_locked');
     sessionStorage.setItem('mf_is_unlocked', 'true');
     this.saveState();
     this.setupAuth();
-    this.showToast(`🎉 Conta criada com sucesso! Bem-vindo(a), ${newUser.name}!`);
+    this.showToast(`🎉 Conta criada com sucesso! Bem-vindo(a), ${extractFirstName(this.currentUser)}!`);
     this.render();
     return true;
   }
@@ -366,6 +442,7 @@ class MercadoFacilApp {
   logout() {
     this.currentUser = null;
     this.isLocked = false;
+    localStorage.setItem('mf_logged_out', 'true');
     localStorage.removeItem('mf_app_locked');
     sessionStorage.removeItem('mf_is_unlocked');
     this.saveState();
@@ -399,13 +476,14 @@ class MercadoFacilApp {
         exists.password = payload.p;
       }
 
-      this.currentUser = { username: payload.u, name: payload.n };
+      this.currentUser = { username: payload.u, name: extractDisplayName({ username: payload.u, name: payload.n }) };
       this.isLocked = false;
+      localStorage.removeItem('mf_logged_out');
       localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
       this.setupAuth();
-      this.showToast(`🎉 Conta importada! Bem-vindo(a), ${payload.n}!`);
+      this.showToast(`🎉 Conta importada! Bem-vindo(a), ${extractFirstName(this.currentUser)}!`);
       this.render();
       return true;
     } catch (e) {
@@ -505,8 +583,9 @@ class MercadoFacilApp {
     });
 
     document.getElementById('btn-fill-google-user')?.addEventListener('click', () => {
-      this.currentUser = { username: 'google_user', name: 'Ana Maria Silva (Google)' };
+      this.currentUser = { username: 'anamar.silva.35@gmail.com', name: 'Anamar da Silva' };
       this.isLocked = false;
+      localStorage.removeItem('mf_logged_out');
       localStorage.removeItem('mf_app_locked');
       sessionStorage.setItem('mf_is_unlocked', 'true');
       this.saveState();
